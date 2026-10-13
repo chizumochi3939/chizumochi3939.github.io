@@ -123,7 +123,7 @@
         </div>
       </div>
     </div>
-    <audio id="audio"></audio>
+    <audio id="audio" preload="none"></audio>
   </div>
     <section id="playlistPanel" class="playlist-panel" aria-labelledby="playlistHeading" hidden>
       <div class="playlist-heading">
@@ -242,6 +242,8 @@
       <img
         src="assets/pics/夏夢花火.png"
         alt="夏梦花火"
+        loading="lazy"
+        decoding="async"
       >
     </a>
 
@@ -261,7 +263,7 @@
       </div>
       <div class="instrumental-actions">
         <a class="song-preview-link" href="https://www.bilibili.com/video/BV16sT9znEqa" target="_blank" rel="noopener noreferrer" data-i18n="featured.song.watch">在 Bilibili 中播放 ↗</a>
-        <audio class="instrumental-audio" controls preload="metadata" src="assets/music/夜明けの野原.mp3"></audio>
+        <audio class="instrumental-audio" controls preload="none" src="assets/music/夜明けの野原.mp3"></audio>
       </div>
     </article>
     <article class="instrumental-card">
@@ -271,7 +273,7 @@
       </div>
       <div class="instrumental-actions">
         <a class="song-preview-link" href="https://www.bilibili.com/video/BV1Xe411B7Mu" target="_blank" rel="noopener noreferrer" data-i18n="featured.song.watch">在 Bilibili 中播放 ↗</a>
-        <audio class="instrumental-audio" controls preload="metadata" src="assets/music/クリスマスオード.mp3"></audio>
+        <audio class="instrumental-audio" controls preload="none" src="assets/music/クリスマスオード.mp3"></audio>
       </div>
     </article>
   </div>
@@ -538,6 +540,8 @@
 <script src="script.js"></script>
 <script src="travel-data.js"></script>
 <script src="izu-itinerary-data.js"></script>
+<script src="travel-photo-manifest.js"></script>
+<script src="travel-photo-manifest.js"></script>
 <script src="travel.js"></script>
 <script src="translation-data.js"></script>
 <script src="translations.js"></script>

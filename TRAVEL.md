@@ -72,3 +72,14 @@ days: [
 
 没有内容时详情页显示“待更新”，不生成虚构行程。文字可先写中文，缺少的翻译会回退到中文。
 详情链接示例：`trip.html?trip=kii&lang=zh`。
+# Online photo previews
+
+After adding or replacing numbered travel photos, run this from the site folder:
+
+```powershell
+./prepare-event-images.ps1 -AssetRoot 'assets/travel'
+```
+
+Publish the updated `travel-photo-manifest.js` and `assets/travel/**/previews/`
+along with the original photos. The manifest lets the website list photos without
+downloading every original first. Originals remain available for enlarged viewing.

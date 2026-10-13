@@ -1,12 +1,12 @@
-param([string]$EventFolder = '')
+param([string]$EventFolder = '', [string]$AssetRoot = 'assets/events')
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
-$root = Join-Path $PSScriptRoot 'assets/events'
+$root = Join-Path $PSScriptRoot $AssetRoot
 if ($EventFolder) { $root = Join-Path $root $EventFolder }
 $codec = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object MimeType -eq 'image/jpeg'
 $parameters = [System.Drawing.Imaging.EncoderParameters]::new(1)
 $parameters.Param[0] = [System.Drawing.Imaging.EncoderParameter]::new([System.Drawing.Imaging.Encoder]::Quality, [long]85)
-Get-ChildItem -LiteralPath $root -Recurse -File | Where-Object { $_.Extension -match '^\.(jpg|jpeg|png)$' -and $_.Directory.Name -ne 'previews' } | ForEach-Object {
+Get-ChildItem -LiteralPath $root -Recurse -File | Where-Object { $_.Extension -match '^\.(jpg|jpeg|png)$' -and $_.FullName -notmatch '[\\/]previews?[\\/]' } | ForEach-Object {
     $source = $_
     $folder = Join-Path $source.DirectoryName 'previews'
     [System.IO.Directory]::CreateDirectory($folder) | Out-Null
@@ -31,3 +31,11 @@ Get-ChildItem -LiteralPath $root -Recurse -File | Where-Object { $_.Extension -m
     } finally { $image.Dispose() }
 }
 $parameters.Dispose()
+if ($AssetRoot -eq 'assets/travel') {
+    $manifest = @{}
+    foreach ($trip in @('kii', 'izu')) {
+        $manifest[$trip] = @(Get-ChildItem -LiteralPath (Join-Path $root $trip) -File | Where-Object Name -match '^\d+\.jpg$' | Sort-Object Name | Select-Object -ExpandProperty Name)
+    }
+    $json = ConvertTo-Json -InputObject $manifest -Depth 4
+    [System.IO.File]::WriteAllText((Join-Path $PSScriptRoot 'travel-photo-manifest.js'), "window.travelPhotoManifest = $json;", [System.Text.UTF8Encoding]::new($false))
+}

@@ -173,13 +173,12 @@
         img.style.visibility = "visible";
       } catch (_) { /* Allow a later visit to retry failed requests. */ }
     };
-    if (index < 2) loadPhoto();
     const observer = new IntersectionObserver(entries => {
       if (entries.some(entry => entry.isIntersecting)) {
         loadPhoto();
         observer.disconnect();
       }
-    }, { root: track, rootMargin: "0px 220px" });
+    }, { rootMargin: "300px 0px" });
     observer.observe(button);
     button.append(img);
     button.addEventListener("click", () => openViewer(photos, index));

@@ -84,6 +84,16 @@
   async function discoverPhotos(trip) {
     const config = trip.autoPhotos;
     if (!config) return;
+    const files = window.travelPhotoManifest?.[trip.id];
+    if (files) {
+      trip.photos = files.map(filename => ({
+        src: config.folder + "/" + filename,
+        preview: config.folder + "/previews/" + filename + ".jpg",
+        caption: trip.photoDescriptions?.[parseInt(filename, 10) - 1] || "",
+        alt: trip.title
+      }));
+      return;
+    }
     const photos = [];
     const extension = config.extension || "jpg";
     const limit = config.max || 200;
@@ -280,7 +290,7 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
         slide.dataset.tripId = trip.id;
         slide.href = urlFor(trip.id);
       }
-      const mainImage = photoImage(photo, local(trip.title) + " " + (i + 1), !!detail);
+      const mainImage = photoImage(photo, local(trip.title) + " " + (i + 1), true);
       if (linkToDetail) {
         mainImage.loading = "eager";
         mainImage.decode?.().catch(() => {});
@@ -372,6 +382,15 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
       return imagePreparation.get(image);
     }
     let labelLanguage = null;
+    let nearViewport = !!detail;
+    const visibilityObserver = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        nearViewport = true;
+        update();
+        visibilityObserver.disconnect();
+      }
+    }, { rootMargin: "400px" });
+    if (!detail) visibilityObserver.observe(root);
     let cachedWidth = 0;
     // clientWidth rounds fractional pixels; multiplying it drifts away from snap points.
     const slideWidth = () => cachedWidth || (cachedWidth = slides[0].getBoundingClientRect().width || track.clientWidth);
@@ -386,12 +405,12 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
         caption.textContent = local(items[selected].caption);
         caption.hidden = !caption.textContent;
       }
-      for (const i of [selected, normalize(selected - 1), normalize(selected + 1)]) {
+      for (const i of nearViewport ? [selected, normalize(selected - 1), normalize(selected + 1)] : []) {
         slides[i].querySelectorAll("img").forEach(image => {
           prepareImage(image);
         });
       }
-      if (looping && (selected === 0 || selected === items.length - 1)) {
+      if (nearViewport && looping && (selected === 0 || selected === items.length - 1)) {
         track.querySelectorAll('[data-loop-clone] img').forEach(prepareImage);
       }
       if (labelLanguage === language) return;
@@ -479,7 +498,7 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
     galleries.push({
       update,
       getSelected: () => selected,
-      dispose: () => { interrupt(); observer.disconnect(); clearTimeout(settleTimer); }
+      dispose: () => { interrupt(); observer.disconnect(); visibilityObserver.disconnect(); clearTimeout(settleTimer); }
     });
     update();
     return root;
