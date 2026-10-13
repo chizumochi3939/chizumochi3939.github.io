@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    if (performance.getEntriesByType("navigation")[0]?.type === "reload") {
+      const home = new URL("index.html", location.href).href;
+      if (window.parent === window) location.replace(home);
+      else window.parent.postMessage({ type: "travel:refresh-home" }, "*");
+    }
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travel | Chizumochi</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="travel.css">
+</head>
+<body class="trip-page">
+  <script>
+    if (new URLSearchParams(location.search).get("embedded") === "1") {
+      document.body.classList.add("trip-embedded");
+    }
+  </script>
+  <header class="nav">
+    <a class="brand" href="index.html">chizumochi<span>.</span></a>
+    <div class="nav-tools">
+      <button class="lang active" data-lang="zh">中</button>
+      <button class="lang" data-lang="ja">日</button>
+      <button class="lang" data-lang="en">EN</button>
+    </div>
+  </header>
+  <main class="trip-detail" id="tripDetail">
+    <a class="trip-back" href="index.html#travel" data-travel-label="back">← 旅行总览</a>
+    <header class="trip-detail-heading">
+      <p class="eyebrow" id="tripDate"></p>
+      <h1 id="tripTitle"></h1>
+      <p id="tripRoute" class="trip-route"></p>
+    </header>
+    <div id="tripGallery"></div>
+    <section class="trip-itinerary" id="tripItinerary">
+      <div class="trip-itinerary-heading">
+        <h2 data-travel-label="itinerary">行程记录</h2>
+      </div>
+      <div id="tripItineraryIntro"></div>
+      <div id="tripDays"></div>
+    </section>
+  </main>
+  <script src="travel-itinerary-data.js"></script>
+  <script src="izu-itinerary-data.js"></script>
+  <script src="travel-data.js"></script>
+  <script src="travel.js"></script>
+</body>
+</html>

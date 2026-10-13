@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<script>
+(() => {
+  history.scrollRestoration = "manual";
+  try {
+    const url = new URL(location.href);
+    url.hash = "";
+    history.replaceState(history.state, "", url.href);
+  } catch (_) {}
+  let interacted = false;
+  ["pointerdown", "wheel", "touchstart", "keydown"].forEach(type => {
+    window.addEventListener(type, () => { interacted = true; }, { once: true, passive: true });
+  });
+  const resetToTop = () => {
+    if (interacted) return;
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  };
+  document.addEventListener("DOMContentLoaded", resetToTop, { once: true });
+  window.addEventListener("load", resetToTop, { once: true });
+  window.addEventListener("pageshow", () => {
+    resetToTop();
+    requestAnimationFrame(() => requestAnimationFrame(resetToTop));
+  });
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Chizumochi — Vocaloid, Travel, Writing.">
+<title>Chizumochi — Personal Website</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="travel.css">
+</head>
+<body>
+<header class="nav">
+  <div class="nav-primary">
+    <a class="brand" href="#home">chizumochi<span>.</span></a>
+    <nav>
+      <a href="#about" data-i18n="nav.about">介绍</a>
+      <span class="music-nav-item"><a href="#music" data-i18n="nav.music">Vocaloid</a><button id="musicNavButton" class="music-nav-button" type="button" aria-label="Vocaloid 子菜单" aria-expanded="false" aria-controls="musicNavMenu"><img class="music-nav-chevron" src="assets/icons/chevron-right.svg" width="12" height="12" alt="" aria-hidden="true"></button></span>
+      <a href="#travel" data-i18n="nav.travel">旅行</a>
+      <a href="#writing" data-i18n="nav.writing">文学</a>
+      <a href="#contact" data-i18n="nav.contact">联系</a>
+    </nav>
+  </div>
+  <div class="nav-tools">
+    <button class="lang active" data-lang="zh">中</button>
+    <button class="lang" data-lang="ja">日</button>
+    <button class="lang" data-lang="en">EN</button>
+    <button class="theme" id="themeBtn">☼</button>
+  </div>
+  <div id="navPlayer" class="home-nav-player" hidden>
+    <img id="navPlayerCover" class="trip-mini-cover" alt="">
+    <div class="trip-mini-info">
+      <strong id="navPlayerTitle" class="trip-mini-title"></strong>
+      <span id="navPlayerArtist" class="trip-mini-artist"></span>
+    </div>
+    <div class="trip-mini-controls">
+      <button id="navPrev" type="button">◀</button>
+      <button id="navPlay" class="trip-mini-play" type="button">▶</button>
+      <button id="navNext" type="button">▶</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<section class="hero" id="home">
+  <div class="hero-copy">
+    <p class="eyebrow">A PERSONAL SPACE / 2026</p>
+    <h1>Hi, I'm<br><span>Chizumochi.</span></h1>
+    <p class="hero-text" data-i18n="hero.text">
+      欢迎来到与我同在的世界
+    </p>
+    <div class="hero-actions">
+      <a class="button primary" href="#music" data-i18n="hero.music">我的 Vocaloid →</a>
+      <a class="button secondary" href="#travel" data-i18n="hero.travel">我的旅行 →</a>
+    </div>
+  </div>
+
+  <div class="player-dock">
+  <div class="hero-player">
+    <img id="playerBackdrop" class="player-backdrop" alt="" aria-hidden="true" hidden>
+    <div class="player-top">
+      <span data-i18n="player.now">NOW PLAYING</span>
+      <button id="muteBtn" type="button" aria-label="播放" title="播放">
+        <span aria-hidden="true">♪</span>
+        <span class="floating-note" aria-hidden="true">♪</span>
+        <span class="floating-note" aria-hidden="true">♫</span>
+        <span class="floating-note" aria-hidden="true">♪</span>
+      </button>
+    </div>
+  <div class="album-art">
+    <div class="album-glow"></div>
+    <img id="playerCover" src="" alt="Album Cover">
+  </div>
+    <div class="player-info">
+      <button id="playlistBtn" class="playlist-toggle" type="button" aria-label="Playlist" title="Playlist" aria-expanded="false" aria-controls="playlistPanel">
+        <img src="assets/icons/list-music.svg" width="20" height="20" alt="">
+      </button>
+      <h3 id="playerTitle">Your favorite song</h3>
+      <p id="playerArtist">Add your Vocaloid in assets/music/</p>
+    </div>
+    <div class="progress-wrap">
+      <span id="currentTime">0:00</span>
+      <div class="progress" role="slider" tabindex="0" aria-label="播放进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="progressBar"></div></div>
+      <span id="duration">0:00</span>
+    </div>
+    <div class="player-controls">
+      <button id="playModeBtn" type="button" aria-label="随机播放" title="随机播放">
+        <img id="playModeIcon" src="assets/icons/shuffle.svg" width="20" height="20" alt="">
+      </button>
+      <button id="prevBtn">◀</button>
+      <button class="play" id="playBtn">▶</button>
+      <button id="nextBtn">▶</button>
+      <div class="volume-control">
+        <button id="volumeBtn" type="button" aria-label="调整音量" title="调整音量" aria-expanded="false" aria-controls="volumePanel">
+          <img src="assets/icons/volume-2.svg" width="20" height="20" alt="">
+        </button>
+        <div id="volumePanel" class="volume-panel" hidden>
+          <span id="volumeValue">100%</span>
+          <input id="volumeSlider" type="range" min="0" max="100" value="100" step="1" aria-label="音量">
+        </div>
+      </div>
+    </div>
+    <audio id="audio"></audio>
+  </div>
+    <section id="playlistPanel" class="playlist-panel" aria-labelledby="playlistHeading" hidden>
+      <div class="playlist-heading">
+        <h3 id="playlistHeading">Playlist <span id="playlistCount"></span></h3>
+        <input id="playlistSearch" type="search" placeholder="搜索歌曲" aria-label="搜索歌名或创作者" autocomplete="off">
+        <button id="playlistClose" type="button" aria-label="Close playlist" title="Close playlist">&#215;</button>
+      </div>
+      <ul id="playlistItems" class="playlist-items"></ul>
+      <p id="playlistEmpty" class="playlist-empty" role="status" hidden>没有找到相关歌曲</p>
+    </section>
+  </div>
+</section>
+
+<section class="section" id="about">
+  <div class="section-head"><span>01</span><h2 data-i18n="nav.about">介绍</h2></div>
+  <div class="about-grid">
+    <div>
+      <p class="lead" data-i18n="about.lead">
+        我想把这里做成一个真正属于我的地方。
+      </p>
+      <p data-i18n="about.body">
+        这里没有简历式的介绍，也不需要把自己定义成某一个身份。
+        我会在这里记录我写过的歌、喜欢的 Vocaloid、走过的地方，以及偶尔写下来的文字。
+      </p>
+    </div>
+    <div class="about-card">
+      <div class="about-symbol">◎</div>
+      <p data-i18n="about.card">Vocaloid · Travel · Writing<br>and everything in between.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section tinted" id="music">
+  <div class="section-head"><span>02</span><h2 data-i18n="nav.music">Vocaloid</h2></div>
+  <p class="section-intro" data-i18n="music.intro">Vocaloid 会是这个网站最重要的一部分之一。</p>
+
+  <div class="creator-area">
+    <div class="creator-copy">
+      <p class="eyebrow">VOCALOID</p>
+      <h3 id="vocaloidHeading" data-i18n="music.pTitle">关于 VOCALOID</h3>
+      <p data-i18n="music.pText">这里会分享我喜欢的 VOCALOID 歌曲、P 主、专辑，以及自己的感想。</p>
+    </div>
+    <div class="creator-placeholder">
+      <span>+</span>
+      <p data-i18n="music.pAdd">VOCALOID 相关内容待更新</p>
+    </div>
+  </div>
+
+  <div class="music-intro">
+    <div>
+      <p class="eyebrow">Chizumochi Music</p>
+      <h3 id="originalMusicHeading" data-i18n="music.myTitle">原创歌曲</h3>
+      <p data-i18n="music.myText">在2022年10月17日，我创作了我的第一首歌曲《少女化战争》。从此以后，我一直在进行作曲工作。虽然只有部分乐曲进行了调音与投稿，且都是vocal only的版本，但是之后也会一直创作下去。</p>
+      <p data-i18n="music.projectText">关于我的第0张专辑《少年少女战争化》，这是我从高中时期便开始进行的企划，旨在创作音乐的同时，也创作赋予其世界观的小说。该企划在很大程度上受到了<a href="https://zh.wikipedia.org/wiki/%E9%99%BD%E7%82%8E%E8%A8%88%E5%8A%83" target="_blank" rel="noopener noreferrer">阳炎Project</a>的影响。时至今日，我仍然保持着对<a href="https://x.com/jin_jin_suruyo" target="_blank" rel="noopener noreferrer">じん</a>与<a href="https://zh.wikipedia.org/wiki/%E9%99%BD%E7%82%8E%E8%A8%88%E5%8A%83" target="_blank" rel="noopener noreferrer">阳炎Project</a>的热爱。</p>
+    </div>
+  <div class="music-showcase">
+  <div class="album-list">
+
+    <article class="album">
+      <span>0th ALBUM</span>
+      <h4 data-i18n="album.0.title">「少年少女战争化」</h4>
+      <ol>
+        <li><span data-i18n="album.0.song1">少女化战争</span> <small>2022.10</small></li>
+        <li><span data-i18n="album.0.song2">爱情化战争</span> <small>2022.12</small></li>
+        <li><span data-i18n="album.0.song3">恋爱化战争</span> <small>2022.12</small></li>
+        <li><span data-i18n="album.0.song4">超宇宙爱情</span> <small>2024.07</small></li>
+        <li><span data-i18n="album.0.song5">时间旅行</span> <small>2026.04</small></li>
+        <li><span data-i18n="album.0.song6">再度</span> <small>2026.09</small></li>
+        <li><span data-i18n="album.0.song7">少年少女战争歌</span> <small>????</small></li>
+      </ol>
+    </article>
+
+    <article class="album">
+      <span>1st ALBUM</span>
+      <h4 data-i18n="album.1.title">「浮游夜月行」</h4>
+      <ol>
+        <li><span data-i18n="album.1.song1">让那个夏日再度重现</span> <small>2023.07</small></li>
+        <li><span data-i18n="album.1.song2">大雨如注</span> <small>2025.06</small></li>
+        <li><span data-i18n="album.1.song3">夏梦花火</span> <small>2025.08</small></li>
+        <li><span data-i18n="album.1.song4">向日葵</span> <small>2026.08</small></li>
+        <li data-i18n="album.1.song5">……</li>
+      </ol>
+    </article>
+
+    <article class="album"> 
+      <span>2nd ALBUM</span> 
+      <h4 data-i18n="album.2.title">「世界理论」</h4> 
+      <ol> 
+        <li><span data-i18n="album.2.song1">神罚</span> <small>????</small></li> 
+      </ol> 
+    </article> 
+
+  </div>
+<!-- 夏梦花火 -->
+<section class="song-preview" aria-labelledby="songPreviewHeading">
+  <h4 id="songPreviewHeading" data-i18n="featured.song.label">歌曲试听</h4>
+  <div class="song-preview-row">
+
+  <div class="song-preview-info">
+    <h5><span data-i18n="featured.song.title">夏梦花火</span><span class="song-preview-credit"> - chizumochi/初音ミク</span></h5>
+
+    <p data-i18n="featured.song.text">
+      “无论如何都想与你共同眺望这片星空”
+    </p>
+    <a class="song-preview-link" href="https://www.bilibili.com/video/BV1y9hozhEzr" target="_blank" rel="noopener noreferrer" data-i18n="featured.song.watch">在 Bilibili 中播放 ↗</a>
+  </div>
+
+  <div class="song-preview-media">
+
+    <a
+      href="https://www.bilibili.com/video/BV1y9hozhEzr"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="song-preview-cover"
+    >
+      <img
+        src="assets/pics/夏夢花火.png"
+        alt="夏梦花火"
+      >
+    </a>
+
+  </div>
+
+  </div>
+</section>
+</div>
+
+<section class="instrumental-section" aria-labelledby="instrumentalHeading">
+  <p id="instrumentalHeading" data-i18n="music.instrumentalIntro">除此之外，在高中时期我还创作过一些纯音乐作品：</p>
+  <div class="instrumental-grid">
+    <article class="instrumental-card">
+      <div class="song-preview-row">
+        <div class="song-preview-info"><h5><span data-i18n="instrumental.dawn.title">夜明けの野原(拂晓的原野)</span><span class="song-preview-credit"> - chizumochi · 2021.03</span></h5></div>
+        <div class="song-preview-media"><a href="https://www.bilibili.com/video/BV16sT9znEqa" target="_blank" rel="noopener noreferrer" class="song-preview-cover"><img src="assets/pics/夜明けの野原.jpg" alt="夜明けの野原"></a></div>
+      </div>
+      <div class="instrumental-actions">
+        <a class="song-preview-link" href="https://www.bilibili.com/video/BV16sT9znEqa" target="_blank" rel="noopener noreferrer" data-i18n="featured.song.watch">在 Bilibili 中播放 ↗</a>
+        <audio class="instrumental-audio" controls preload="metadata" src="assets/music/夜明けの野原.mp3"></audio>
+      </div>
+    </article>
+    <article class="instrumental-card">
+      <div class="song-preview-row">
+        <div class="song-preview-info"><h5><span data-i18n="instrumental.christmas.title">クリスマスオード(圣诞颂歌)</span><span class="song-preview-credit"> - chizumochi · 2021.02</span></h5></div>
+        <div class="song-preview-media"><a href="https://www.bilibili.com/video/BV1Xe411B7Mu" target="_blank" rel="noopener noreferrer" class="song-preview-cover"><img src="assets/pics/クリスマスオード.jpg" alt="クリスマスオード"></a></div>
+      </div>
+      <div class="instrumental-actions">
+        <a class="song-preview-link" href="https://www.bilibili.com/video/BV1Xe411B7Mu" target="_blank" rel="noopener noreferrer" data-i18n="featured.song.watch">在 Bilibili 中播放 ↗</a>
+        <audio class="instrumental-audio" controls preload="metadata" src="assets/music/クリスマスオード.mp3"></audio>
+      </div>
+    </article>
+  </div>
+</section>
+</div>
+
+<section class="covers-section" aria-labelledby="coversHeading">
+  <h3 id="coversHeading" data-i18n="music.coversTitle">歌曲翻唱</h3>
+  <p data-i18n="music.coversIntro">在2023年1月11日我投稿了第一个完整的翻唱作品《夏令时记录》，从此开始了翻唱100首术曲的长期企划。以下将展示我的部分投稿作品：</p>
+  <div class="covers-grid">
+    <article class="cover-song">
+      <a class="song-preview-cover" href="https://www.bilibili.com/video/BV1JD4y1n72s" target="_blank" rel="noopener noreferrer"><img src="assets/pics/KING.jpg" alt="KING" loading="lazy"></a>
+      <h4><a href="https://www.bilibili.com/video/BV1JD4y1n72s" target="_blank" rel="noopener noreferrer">KING <small class="cover-song-date">- <time datetime="2023-01">2023.01</time></small></a></h4>
+      <a class="song-preview-link" href="https://www.bilibili.com/video/BV1JD4y1n72s" target="_blank" rel="noopener noreferrer" data-i18n="featured.song.watch">在 Bilibili 中播放 ↗</a>
+    </article>
+    <article class="cover-song">
+      <a class="song-preview-cover" href="https://www.bilibili.com/video/BV1Xh4y1n7La" target="_blank" rel="noopener noreferrer"><img src="assets/pics/アスノヨゾラ哨戒班.jpg" alt="アスノヨゾラ哨戒班" loading="lazy"></a>
+      <h4><a href="https://www.bilibili.com/video/BV1Xh4y1n7La" target="_blank" rel="noopener noreferrer">アスノヨゾラ哨戒班 <small class="cover-song-date">- <time datetime="2023-05">2023.05</time></small></a></h4>
+      <a class="song-preview-link" href="https://www.bilibili.com/video/BV1Xh4y1n7La" target="_blank" rel="noopener noreferrer" data-i18n="featured.song.watch">在 Bilibili 中播放 ↗</a>
+    </article>
+    <article class="cover-song">
+      <a class="song-preview-cover" href="https://www.bilibili.com/video/BV1SSgK6bENJ" target="_blank" rel="noopener noreferrer"><img src="assets/pics/月が綺麗ねと言われたい.jpg" alt="月が綺麗ねと言われたい！" loading="lazy"></a>
+      <h4><a href="https://www.bilibili.com/video/BV1SSgK6bENJ" target="_blank" rel="noopener noreferrer">月が綺麗ねと言われたい！ <small class="cover-song-date">- <time datetime="2026-08">2026.08</time></small></a></h4>
+      <a class="song-preview-link" href="https://www.bilibili.com/video/BV1SSgK6bENJ" target="_blank" rel="noopener noreferrer" data-i18n="featured.song.watch">在 Bilibili 中播放 ↗</a>
+    </article>
+  </div>
+</section>
+
+<section class="translations-section" aria-labelledby="translationsHeading">
+  <h3 id="translationsHeading" data-i18n="music.translationsTitle">歌词翻译</h3>
+  <p class="translations-intro" data-i18n="music.translationsIntro">由我个人进行中文翻译的Vocaloid歌词，部分已上传至网易云音乐：</p>
+  <div id="translationWorks" class="translation-grid"></div>
+</section>
+<section class="doujin-section" aria-labelledby="doujinHeading">
+  <h3 id="doujinHeading" data-i18n="music.doujinTitle">同人活动</h3>
+  <p class="doujin-intro" data-i18n="music.doujinIntro">以下是由我主办，同时担任策划与制作的Vocaloid同人活动：</p>
+  <div class="doujin-list">
+    <!-- Replace each image src with the event image path. -->
+    <article class="doujin-event" id="nanjingEvent">
+      <div class="doujin-image"><img src="assets/icons/image.svg" alt="" loading="lazy"></div>
+      <div class="doujin-copy">
+        <h4 data-i18n="doujin.1.title">活动名称 01</h4>
+        <p data-i18n="doujin.1.description">活动介绍待补充。</p>
+      </div>
+    </article>
+    <article class="doujin-event" id="nanjingSecondEvent">
+      <div class="doujin-image"><img src="assets/icons/image.svg" alt="" loading="lazy"></div>
+      <div class="doujin-copy">
+        <h4 data-i18n="doujin.2.title">活动名称 02</h4>
+      </div>
+    </article>
+    <article class="doujin-event" id="nanjingFirstEvent">
+      <div class="doujin-image"><img src="assets/icons/image.svg" alt="" loading="lazy"></div>
+      <div class="doujin-copy">
+        <h4 data-i18n="doujin.3.title">活动名称 03</h4>
+      </div>
+    </article>
+  </div>
+</section>
+</section>
+
+<section class="section" id="travel">
+  <div class="travel-overview">
+    <div class="travel-overview-copy">
+      <div class="section-head">
+        <span>03</span>
+        <h2 data-i18n="nav.travel">旅行</h2>
+      </div>
+      <p class="section-intro" data-i18n="travel.intro">从2024年1月开始，我正式开启了走遍日本全部47个都道府县的长流程企划。目前为止已达成22/47，下一站又将去往何方...?</p>
+    </div>
+    <figure class="travel-map" id="travelMap">
+      <div class="travel-map-frame"><img class="travel-empty-icon" src="assets/icons/image.svg" alt=""></div>
+      <figcaption data-travel-label="map">制县等级</figcaption>
+    </figure>
+  </div>
+
+  <div class="travel-list">
+
+    <article class="trip-card">
+      <span>2026.07</span>
+      <h3 data-i18n="travel.kii.title">纪伊行</h3>
+      <p data-i18n="travel.kii.route">
+        大阪 → 伊势 → 鸟羽 → 志摩 → 纪伊胜浦 → 新宫 → 串本 → 白滨 → 和歌山
+      </p>
+      <b>2026</b>
+    </article>
+
+    <article class="trip-card">
+      <span>2026.01</span>
+      <h3 data-i18n="travel.izu.title">伊豆行</h3>
+      <p data-i18n="travel.izu.route">
+        东京 → 箱根 → 热海 → 伊东 → 南伊豆 → 横滨 → 东京
+      </p>
+      <b>2026</b>
+    </article>
+
+    <article class="trip-card">
+      <span>2025.07</span>
+      <h3 data-i18n="travel.kyushu.title">九州行</h3>
+      <p data-i18n="travel.kyushu.route">
+        福冈 → 熊本 → 大分 → 宫崎 → 鹿儿岛 → 神户 → 姬路 → 大阪
+      </p>
+      <b>2025</b>
+    </article>
+
+    <article class="trip-card">
+      <span>2024.08</span>
+      <h3 data-i18n="travel.sanyo.title">山阳行</h3>
+      <p data-i18n="travel.sanyo.route">
+        名古屋 → 京都 → 大阪 → 尾道 → 广岛 → 福冈
+      </p>
+      <b>2024</b>
+    </article>
+
+    <article class="trip-card">
+      <span>2024.01</span>
+      <h3 data-i18n="travel.hokkaido.title">北海道行</h3>
+      <p data-i18n="travel.hokkaido.route">
+        东京 → 富士山 → 东京 → 札幌 → 小樽 → 旭川 → 网走 → 知床 → 钏路 → 札幌 → 东京
+      </p>
+      <b>2024</b>
+    </article>
+
+  </div>
+
+  <div class="travel-footer">
+    <span data-i18n="travel.archive">TRAVEL ARCHIVE</span>
+    <span data-i18n="travel.period">JAPAN / 2024 — NOW</span>
+  </div>
+</section>
+```
+
+<section class="section tinted" id="writing">
+  <div class="section-head">
+    <span>04</span>
+    <h2 data-i18n="nav.writing">文学</h2>
+  </div>
+
+  <p class="section-intro" data-i18n="writing.intro">
+    所谓的自我艺术。
+  </p>
+
+  <p class="writing-note" data-i18n="writing.note">
+
+  </p>
+
+  <div class="writing-grid">
+
+    <!-- 意识流 -->
+    <article class="writing-category">
+
+      <p class="eyebrow">STREAM OF CONSCIOUSNESS</p>
+
+      <h3 data-i18n="writing.streamTitle">意识流作品</h3>
+
+      <p data-i18n="writing.streamText">
+        浮游于夜月的终末旅行。
+      </p>
+
+      <div class="writing-works">
+
+        <a href="assets/writing/存于此处的空想战争.pdf"
+           target="_blank"
+           class="writing-work">
+
+          <div class="writing-work-content">
+            <div class="writing-work-title">
+              <strong data-i18n="writing.streamwork1.title">
+                存于此处的空想战争
+              </strong>
+              <span class="writing-arrow">↗</span>
+            </div>
+          </div>
+
+          <span class="writing-date">2024.05</span>
+
+        </a>
+
+        <a href="assets/writing/倘若明日将死.pdf"
+           target="_blank"
+           class="writing-work">
+
+          <div class="writing-work-content">
+            <div class="writing-work-title">
+              <strong data-i18n="writing.streamwork2.title">
+                倘若明日将死
+              </strong>
+              <span class="writing-arrow">↗</span>
+            </div>
+          </div>
+
+          <span class="writing-date">2024.05</span>
+
+        </a>
+
+        <a href="assets/writing/终电逃避行.pdf"
+           target="_blank"
+           class="writing-work">
+
+          <div class="writing-work-content">
+            <div class="writing-work-title">
+              <strong data-i18n="writing.streamwork3.title">
+                终电逃避行
+              </strong>
+              <span class="writing-arrow">↗</span>
+            </div>
+          </div>
+
+          <span class="writing-date">2024.07</span>
+
+        </a>
+
+      </div>
+    </article>
+
+
+    <!-- 小说 -->
+    <article class="writing-category">
+
+      <p class="eyebrow">FICTION</p>
+
+      <h3 data-i18n="writing.fictionTitle">小说</h3>
+
+      <p data-i18n="writing.fictionText">
+        某种残存的世界理论。
+      </p>
+
+      <div class="writing-works">
+
+        <a href="assets/writing/艾德隆的葬礼.pdf"
+           target="_blank"
+           class="writing-work">
+
+          <div class="writing-work-content">
+            <div class="writing-work-title">
+              <strong data-i18n="writing.fictionwork1.title">
+                艾德隆的葬礼
+              </strong>
+              <span class="writing-arrow">↗</span>
+            </div>
+          </div>
+
+          <span class="writing-date">2026.06</span>
+
+        </a>
+
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <p class="eyebrow">THANK YOU FOR VISITING</p>
+  <h2 data-i18n="contact.title">感谢来到我「未完成」的世界</h2>
+  <div class="contact-links">
+    <a href="https://github.com/chizumochi3939" target="_blank" rel="noopener noreferrer">GitHub: https://github.com/chizumochi3939 ↗</a>
+    <a href="mailto:3442576188@qq.com,39mikufan3939@gmail.com">Email: 3442576188@qq.com, 39mikufan3939@gmail.com</a>
+  </div>
+</section>
+</main>
+
+<footer><span>© 2026 Chizumochi</span><span>Vocaloid · Travel · Writing</span></footer>
+<script src="script.js"></script>
+<script src="travel-data.js"></script>
+<script src="izu-itinerary-data.js"></script>
+<script src="travel.js"></script>
+<script src="translation-data.js"></script>
+<script src="translations.js"></script>
+<script src="music-navigation.js"></script>
+<script src="events.js"></script>
+</body>
+</html>
