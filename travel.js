@@ -60,7 +60,7 @@
   }
   function photoImage(photo, fallback, deferred = false) {
     if (!photo?.src) return emptyIcon();
-    photo = { ...photo, preview: photo.preview || window.previewImageSource(photo.src) };
+    photo = { ...photo, preview: photo.preview ? window.mobilePreviewSource(photo.preview) : window.previewImageSource(photo.src) };
     const image = make("img");
     image.alt = local(photo.alt) || fallback;
     image.loading = "lazy";

@@ -167,7 +167,7 @@
     img.style.visibility = "hidden";
     const loadPhoto = async () => {
       try {
-        const image = await prepare(preview(src)).catch(() => prepare(src));
+        const image = await prepare(window.mobilePreviewSource(preview(src))).catch(() => prepare(src));
         img.src = image.src;
         await img.decode();
         img.style.visibility = "visible";

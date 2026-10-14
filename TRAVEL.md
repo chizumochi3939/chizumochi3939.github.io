@@ -1,5 +1,8 @@
 # 旅行内容填写
 
+手机轻量预览：更新普通预览图后，在网站目录运行 `./prepare-mobile-images.ps1`。
+提交并上传新生成的 `*.mobile.jpg`、`mobile-image-previews.js`；手机会自动选用轻量版本。
+
 只需在 `travel-data.js` 中填写地图、照片和行程；首页和详情页共用这些数据。
 图片路径相对于网站根目录，建议把旅行照片放在 `assets/travel/` 下。
 
