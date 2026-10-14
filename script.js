@@ -79,7 +79,7 @@ zh: {
 "travel.sanyo.route":"名古屋 → 京都 → 大阪 → 尾道 → 广岛 → 福冈",
 
 "travel.hokkaido.title":"北海道行",
-"travel.hokkaido.route":"东京 → 富士山 → 东京 → 札幌 → 小樽 → 旭川 → 网走 → 知床 → 钏路 → 札幌 → 东京",
+"travel.hokkaido.route":"东京 → 富士山 → 东京 → 札幌 → 小樽 → 札幌 → 旭川 → 网走 → 知床 → 钏路 → 札幌 → 东京",
 
 "travel.archive":"旅行记录",
 "travel.period":"日本 / 2024 — 至今",
@@ -178,7 +178,7 @@ ja:{
 "travel.sanyo.route":"名古屋 → 京都 → 大阪 → 尾道 → 広島 → 福岡",
 
 "travel.hokkaido.title":"北海道行",
-"travel.hokkaido.route":"東京 → 富士山 → 東京 → 札幌 → 小樽 → 旭川 → 網走 → 知床 → 釧路 → 札幌 → 東京",
+"travel.hokkaido.route":"東京 → 富士山 → 東京 → 札幌 → 小樽 → 札幌 → 旭川 → 網走 → 知床 → 釧路 → 札幌 → 東京",
 
 "travel.archive":"旅の記録",
 "travel.period":"日本 / 2024 — 現在",
@@ -274,7 +274,7 @@ en:{
 "travel.sanyo.route":"Nagoya → Kyoto → Osaka → Onomichi → Hiroshima → Fukuoka",
 
 "travel.hokkaido.title":"Hokkaido Journey",
-"travel.hokkaido.route":"Tokyo → Mt. Fuji → Tokyo → Sapporo → Otaru → Asahikawa → Abashiri → Shiretoko → Kushiro → Sapporo → Tokyo",
+"travel.hokkaido.route":"Tokyo → Mt. Fuji → Tokyo → Sapporo → Otaru → Sapporo → Asahikawa → Abashiri → Shiretoko → Kushiro → Sapporo → Tokyo",
 
 "travel.archive":"TRAVEL ARCHIVE",
 "travel.period":"JAPAN / 2024 — NOW",
@@ -757,7 +757,7 @@ playlist.forEach((track,i)=>{
   button.type="button";
   button.className="playlist-track";
   const cover=document.createElement("img");
-  cover.src=track.cover;
+  cover.src=window.previewImageSource(track.cover);
   cover.alt="";
   cover.loading="lazy";
   const info=document.createElement("span");
@@ -875,15 +875,15 @@ function loadTrack(i,recordHistory=true){
 
   cancelScrub();
   playerBackdrop.hidden=true;
-  playerBackdrop.src=t.cover;
+  playerBackdrop.src=window.previewImageSource(t.cover);
   if(playerBackdrop.complete&&playerBackdrop.naturalWidth) playerBackdrop.hidden=false;
   audio.src=t.src;
   renderProgress(0);
   document.getElementById("duration").textContent="0:00";
   document.getElementById("playerTitle").textContent=t.title;
   document.getElementById("playerArtist").textContent=artistText(t);
-  playerCover.src=t.cover;
-  document.getElementById("navPlayerCover").src=t.cover;
+  playerCover.src=window.previewImageSource(t.cover);
+  document.getElementById("navPlayerCover").src=window.previewImageSource(t.cover);
   document.getElementById("navPlayerTitle").textContent=t.title;
   document.getElementById("navPlayerArtist").textContent=artistText(t);
   navPlayer.title=t.title+" · "+artistText(t);

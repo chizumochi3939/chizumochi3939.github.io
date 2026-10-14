@@ -74,6 +74,16 @@ days: [
 详情链接示例：`trip.html?trip=kii&lang=zh`。
 # Online photo previews
 
+To refresh previews for all site images, including music covers and maps, run:
+
+```powershell
+./prepare-event-images.ps1 -AssetRoot 'assets'
+```
+
+Publish `image-previews.js` together with the generated previews. Small UI icons
+keep their original files. Run the travel command below as well after adding or
+renaming travel photos, to refresh the gallery file list.
+
 After adding or replacing numbered travel photos, run this from the site folder:
 
 ```powershell

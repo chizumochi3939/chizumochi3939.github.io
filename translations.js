@@ -50,7 +50,7 @@
     reading.replaceChildren();
     const heading = node("header", "translation-heading");
     const cover = node("img", "translation-cover");
-    cover.src = work.cover;
+    cover.src = window.previewImageSource(work.cover);
     cover.alt = work.title;
     const info = node("div", "translation-info");
     const title = node("h1", "", work.title);
@@ -75,7 +75,7 @@
     audio.setAttribute("aria-label", work.title);
     const controls = node("div", "translation-song-player");
     const playerCover = node("img", "translation-song-cover");
-    playerCover.src = work.cover;
+    playerCover.src = window.previewImageSource(work.cover);
     playerCover.alt = "";
     const playerInfo = node("div", "translation-song-info");
     playerInfo.append(node("strong", "", work.title), node("span", "", work.music + " / " + work.vocal));
@@ -164,7 +164,7 @@
     coverButton.type = "button";
     coverButton.setAttribute("aria-label", work.title);
     const cover = node("img", "");
-    cover.src = work.cover;
+    cover.src = window.previewImageSource(work.cover);
     cover.alt = work.title;
     cover.loading = "lazy";
     coverButton.append(cover);

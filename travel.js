@@ -60,9 +60,10 @@
   }
   function photoImage(photo, fallback, deferred = false) {
     if (!photo?.src) return emptyIcon();
+    photo = { ...photo, preview: photo.preview || window.previewImageSource(photo.src) };
     const image = make("img");
     image.alt = local(photo.alt) || fallback;
-    image.loading = "eager";
+    image.loading = "lazy";
     image.decoding = "async";
     image.draggable = false;
     image.addEventListener("error", () => {
@@ -683,7 +684,7 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
     });
     if (data.map) {
       const mapImage = photoImage({ src: local(data.map), alt: words[language].map }, "");
-      mapImage.loading = "eager";
+      mapImage.loading = "lazy";
       const zoomButton = make("button", "travel-map-zoom");
       zoomButton.type = "button";
       zoomButton.append(mapImage);
@@ -691,16 +692,17 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
       const dialog = make("dialog", "travel-map-dialog");
       const close = make("button", "travel-map-close", "×");
       close.type = "button";
-      const fullImage = photoImage({ src: local(data.map), alt: words[language].map }, "");
+      const fullImage = make("img");
       fullImage.loading = "eager";
       dialog.append(fullImage, close);
       document.body.append(dialog);
       const zoomLabels = { zh: ["放大制县等级地图", "关闭大图"], ja: ["経県値マップを拡大", "閉じる"], en: ["Enlarge prefecture map", "Close image"] };
       const updateMapLabels = () => {
         const source = local(data.map);
-        for (const image of [mapImage, fullImage]) {
-          if (image.getAttribute("src") !== source) image.src = source;
-        }
+        mapImage.loading = "lazy";
+        const previewSource = window.previewImageSource(source);
+        if (mapImage.getAttribute("src") !== previewSource) mapImage.src = previewSource;
+        if (dialog.open && fullImage.getAttribute("src") !== source) fullImage.src = source;
         zoomButton.title = zoomLabels[language][0];
         zoomButton.setAttribute("aria-label", zoomButton.title);
         close.title = zoomLabels[language][1];
@@ -715,6 +717,7 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
         previousOverflow = document.body.style.overflow;
         updateMapLabels();
         dialog.showModal();
+        fullImage.src = local(data.map);
         document.body.style.overflow = "hidden";
       });
       close.addEventListener("click", () => dialog.close());

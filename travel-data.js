@@ -120,11 +120,16 @@ window.travelData = {
     },
     {
       id: "hokkaido", date: "2024.01",
+      featuredPhotos: [1, 7, 13, 20, 21, 22, 24],
+      autoPhotos: { folder: "assets/travel/hokkaido", extension: "jpg" },
+      photoDescriptions: window.hokkaidoTravelContent?.captions || [],
+      itineraryData: window.hokkaidoTravelContent?.itinerary,
+      itineraryMap: "assets/travel/hokkaido/行程图.jpg",
       title: { zh: "北海道行", ja: "北海道行", en: "Hokkaido Journey" },
       route: {
-        zh: "东京 → 富士山 → 东京 → 札幌 → 小樽 → 旭川 → 网走 → 知床 → 钏路 → 札幌 → 东京",
-        ja: "東京 → 富士山 → 東京 → 札幌 → 小樽 → 旭川 → 網走 → 知床 → 釧路 → 札幌 → 東京",
-        en: "Tokyo → Mt. Fuji → Tokyo → Sapporo → Otaru → Asahikawa → Abashiri → Shiretoko → Kushiro → Sapporo → Tokyo"
+        zh: "东京 → 富士山 → 东京 → 札幌 → 小樽 → 札幌 → 旭川 → 网走 → 知床 → 钏路 → 札幌 → 东京",
+        ja: "東京 → 富士山 → 東京 → 札幌 → 小樽 → 札幌 → 旭川 → 網走 → 知床 → 釧路 → 札幌 → 東京",
+        en: "Tokyo → Mt. Fuji → Tokyo → Sapporo → Otaru → Sapporo → Asahikawa → Abashiri → Shiretoko → Kushiro → Sapporo → Tokyo"
       },
       photos: [], days: []
     }

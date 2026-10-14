@@ -6,7 +6,7 @@ if ($EventFolder) { $root = Join-Path $root $EventFolder }
 $codec = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object MimeType -eq 'image/jpeg'
 $parameters = [System.Drawing.Imaging.EncoderParameters]::new(1)
 $parameters.Param[0] = [System.Drawing.Imaging.EncoderParameter]::new([System.Drawing.Imaging.Encoder]::Quality, [long]85)
-Get-ChildItem -LiteralPath $root -Recurse -File | Where-Object { $_.Extension -match '^\.(jpg|jpeg|png)$' -and $_.FullName -notmatch '[\\/]previews?[\\/]' } | ForEach-Object {
+Get-ChildItem -LiteralPath $root -Recurse -File | Where-Object { $_.Extension -match '^\.(jpg|jpeg|png)$' -and $_.FullName -notmatch '[\\/](previews?|icons)[\\/]' } | ForEach-Object {
     $source = $_
     $folder = Join-Path $source.DirectoryName 'previews'
     [System.IO.Directory]::CreateDirectory($folder) | Out-Null
@@ -18,7 +18,8 @@ Get-ChildItem -LiteralPath $root -Recurse -File | Where-Object { $_.Extension -m
             $rotations = @{ 2 = 4; 3 = 2; 4 = 6; 5 = 5; 6 = 1; 7 = 7; 8 = 3 }
             if ($rotations.ContainsKey([int]$orientation)) { $image.RotateFlip([System.Drawing.RotateFlipType]$rotations[[int]$orientation]) }
         }
-        $ratio = [Math]::Min(1.0, 1400.0 / [Math]::Max($image.Width, $image.Height))
+        $edge = if ($source.FullName -match '[\\/](covers|pics|translation)[\\/]') { 640.0 } else { 1400.0 }
+        $ratio = [Math]::Min(1.0, $edge / [Math]::Max($image.Width, $image.Height))
         $bitmap = [System.Drawing.Bitmap]::new([int]($image.Width * $ratio), [int]($image.Height * $ratio))
         $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
         try {
@@ -31,10 +32,24 @@ Get-ChildItem -LiteralPath $root -Recurse -File | Where-Object { $_.Extension -m
     } finally { $image.Dispose() }
 }
 $parameters.Dispose()
+if ($AssetRoot -eq 'assets') {
+    $previews = @{}
+    Get-ChildItem -LiteralPath $root -Recurse -File | Where-Object { $_.Extension -match '^\.(jpg|jpeg|png)$' -and $_.FullName -notmatch '[\\/](previews?|icons)[\\/]' } | ForEach-Object {
+        $target = Join-Path $_.DirectoryName ('previews/' + $_.Name + '.jpg')
+        if (Test-Path -LiteralPath $target) {
+            $original = [System.IO.Path]::GetRelativePath($PSScriptRoot, $_.FullName).Replace('\', '/')
+            $previews[$original] = [System.IO.Path]::GetRelativePath($PSScriptRoot, $target).Replace('\', '/')
+        }
+    }
+    $json = ConvertTo-Json -InputObject $previews -Depth 3
+    [System.IO.File]::WriteAllText((Join-Path $PSScriptRoot 'image-previews.js'), "window.imagePreviews = $json;`nwindow.previewImageSource = src => window.imagePreviews[src] || src;`n", [System.Text.UTF8Encoding]::new($false))
+}
 if ($AssetRoot -eq 'assets/travel') {
     $manifest = @{}
-    foreach ($trip in @('kii', 'izu')) {
-        $manifest[$trip] = @(Get-ChildItem -LiteralPath (Join-Path $root $trip) -File | Where-Object Name -match '^\d+\.jpg$' | Sort-Object Name | Select-Object -ExpandProperty Name)
+    $travelRoot = Join-Path $PSScriptRoot 'assets/travel'
+    foreach ($tripFolder in Get-ChildItem -LiteralPath $travelRoot -Directory) {
+        $files = @(Get-ChildItem -LiteralPath $tripFolder.FullName -File | Where-Object Name -match '^\d+\.(jpg|jpeg|png)$' | Sort-Object { [int]$_.BaseName } | Select-Object -ExpandProperty Name)
+        if ($files.Count) { $manifest[$tripFolder.Name] = $files }
     }
     $json = ConvertTo-Json -InputObject $manifest -Depth 4
     [System.IO.File]::WriteAllText((Join-Path $PSScriptRoot 'travel-photo-manifest.js'), "window.travelPhotoManifest = $json;", [System.Text.UTF8Encoding]::new($false))
