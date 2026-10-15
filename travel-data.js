@@ -100,6 +100,12 @@ window.travelData = {
     },
     {
       id: "kyushu", date: "2025.07",
+      featuredPhotos: [5, 1, 20, 24, 21, 33, 34],
+      autoPhotos: { folder: "assets/travel/kyushu", extension: "jpg" },
+      photoDescriptions: window.kyushuTravelContent?.captions || [],
+      itineraryData: window.kyushuTravelContent?.itinerary,
+      itineraryMap: "assets/travel/kyushu/行程图.jpg",
+      itineraryMapPreview: "assets/travel/kyushu/previews/行程图.jpg.jpg",
       title: { zh: "九州行", ja: "九州行", en: "Kyushu Journey" },
       route: {
         zh: "福冈 → 熊本 → 大分 → 宫崎 → 鹿儿岛 → 神户 → 姬路 → 大阪",
@@ -120,7 +126,7 @@ window.travelData = {
     },
     {
       id: "hokkaido", date: "2024.01",
-      featuredPhotos: [1, 7, 13, 20, 21, 22, 24],
+      featuredPhotos: [1, 7, 13, 17, 20, 21, 22, 24],
       autoPhotos: { folder: "assets/travel/hokkaido", extension: "jpg" },
       photoDescriptions: window.hokkaidoTravelContent?.captions || [],
       itineraryData: window.hokkaidoTravelContent?.itinerary,

@@ -149,7 +149,7 @@ ja:{
 "music.coversTitle":"歌ってみた",
 "music.coversIntro":"2023年1月11日、初めてフルで歌った「サマータイムレコード」を投稿しました。それをきっかけに、Vocaloid曲を100曲歌う長期企画を始めました。ここでは、これまで投稿した作品の一部をご紹介します。",
 "music.translationsTitle":"歌詞翻訳",
-"music.doujinTitle":"同人活動",
+"music.doujinTitle":"同人イベント",
 "music.doujinIntro":"私が主催し、企画・制作も担当したVocaloid同人イベントをご紹介します：",
 "doujin.1.title":"イベント名 01",
 "doujin.1.description":"イベントの紹介は後日掲載予定です。",

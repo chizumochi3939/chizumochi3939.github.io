@@ -53,14 +53,23 @@
         container.append(make("div", "trip-itinerary-summary-gap"));
         return;
       }
-      const isRoute = /路线|ルート|route/i.test(line);
-      container.append(textWithLinks(line, isRoute ? "trip-itinerary-route" : "", "div"));
+      const routePrefix = /^\s*(?:🗺️?\s*)?(?:路线|ルート|route)\s*[:：]\s*/i;
+      const isRoute = routePrefix.test(line) || line.includes("→");
+      if (isRoute) {
+        const label = { zh: "🗺️路线:", ja: "🗺️ルート:", en: "🗺️Route:" }[language];
+        container.append(make("div", "trip-itinerary-route", label));
+        const route = line.replace(routePrefix, "").trim();
+        if (route) container.append(textWithLinks(route, "trip-itinerary-route", "div"));
+      } else {
+        container.append(textWithLinks(line, "", "div"));
+      }
     });
     return container;
   }
-  function photoImage(photo, fallback, deferred = false) {
+  function photoImage(photo, fallback, deferred = false, highQuality = false) {
     if (!photo?.src) return emptyIcon();
-    photo = { ...photo, preview: photo.preview ? window.mobilePreviewSource(photo.preview) : window.previewImageSource(photo.src) };
+    const preview = photo.preview || window.imagePreviews?.[photo.src] || photo.src;
+    photo = { ...photo, preview: highQuality ? preview : window.mobilePreviewSource(preview) };
     const image = make("img");
     image.alt = local(photo.alt) || fallback;
     image.loading = "lazy";
@@ -291,7 +300,7 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
         slide.dataset.tripId = trip.id;
         slide.href = urlFor(trip.id);
       }
-      const mainImage = photoImage(photo, local(trip.title) + " " + (i + 1), true);
+      const mainImage = photoImage(photo, local(trip.title) + " " + (i + 1), true, !!detail);
       if (linkToDetail) {
         mainImage.loading = "eager";
         mainImage.decode?.().catch(() => {});
@@ -523,6 +532,46 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
     const back = make("button", "trip-overlay-back", words[language].back);
     back.type = "button";
     const leftGroup = make("div", "trip-overlay-left");
+    const switcher = make("details", "trip-switcher");
+    const switchLabel = make("summary", "trip-overlay-link");
+    const tripList = make("div", "trip-switcher-list");
+    switcher.append(switchLabel, tripList);
+    leftGroup.append(switcher);
+    let currentTripId = "";
+    const updateTripList = () => {
+      switchLabel.textContent = { zh: "切换旅程", ja: "旅を切り替え", en: "Switch trip" }[detailLanguage];
+      tripList.replaceChildren(...data.trips.map(trip => {
+        const link = make("a", "trip-switcher-option");
+        const url = new URL("trip.html", location.href);
+        url.searchParams.set("trip", trip.id);
+        url.searchParams.set("lang", detailLanguage);
+        link.href = url.href;
+        link.append(make("span", "", trip.title[detailLanguage] || trip.title.zh), make("small", "", trip.date));
+        if (trip.id === currentTripId) link.setAttribute("aria-current", "page");
+        link.addEventListener("click", event => {
+          if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+          event.preventDefault();
+          event.stopPropagation();
+          switcher.open = false;
+          switchLabel.focus();
+          if (trip.id === currentTripId) return;
+          currentTripId = trip.id;
+          url.searchParams.set("embedded", "1");
+          frame.src = url.href;
+          updateTripList();
+        });
+        return link;
+      }));
+    };
+    switcher.addEventListener("keydown", event => {
+      if (event.key !== "Escape" || !switcher.open) return;
+      event.stopPropagation();
+      switcher.open = false;
+      switchLabel.focus();
+    });
+    document.addEventListener("pointerdown", event => {
+      if (!switcher.contains(event.target)) switcher.open = false;
+    }, true);
     const links = [["tripGallery", "featured"], ["tripItinerary", "itinerary"], ["tripDays", "journal"]].map(([target, label]) => {
       const link = make("a", "trip-overlay-link");
       link.dataset.target = target;
@@ -567,6 +616,7 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
     let detailLanguage = "zh";
     const setDetailLanguage = nextLanguage => {
       detailLanguage = nextLanguage;
+      updateTripList();
       languageButtons.forEach(button => button.classList.toggle("active", button.dataset.lang === detailLanguage));
       back.textContent = words[detailLanguage].back;
       links.forEach(link => { link.textContent = words[detailLanguage][link.dataset.label]; });
@@ -601,6 +651,7 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
       if (overlay.hidden || closing) return;
       if (!document.getElementById("playlistPanel")?.hidden) document.getElementById("playlistClose")?.click();
       closing = true;
+      switcher.open = false;
       await animateOverlay(false).finished.catch(() => {});
       overlay.hidden = true;
       frame.removeAttribute("src");
@@ -613,6 +664,7 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
       if (!document.getElementById("playlistPanel")?.hidden) document.getElementById("playlistClose")?.click();
       returnFocus = document.activeElement;
       const url = new URL(href, location.href);
+      currentTripId = url.searchParams.get("trip");
       url.searchParams.set("embedded", "1");
       const homeLanguage = document.querySelector('body > .nav .lang.active')?.dataset.lang || language;
       url.searchParams.set("lang", homeLanguage);
@@ -637,6 +689,9 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
     window.addEventListener("site-language-change", event => setDetailLanguage(event.detail));
     frame.addEventListener("load", () => setDetailLanguage(detailLanguage));
     window.addEventListener("message", event => {
+      if (event.source === frame.contentWindow && event.data?.type === "travel:dismiss-switcher") {
+        switcher.open = false;
+      }
       if (event.source === frame.contentWindow && event.data?.type === "travel:request-photos") {
         const trip = data.trips.find(item => item.id === event.data.trip);
         frame.contentWindow.postMessage({ type: "travel:photos", trip: trip?.id, photos: trip?.photos || [] }, "*");
@@ -755,7 +810,7 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
       const summary = make("div", "trip-itinerary-summary");
       if (trip.itineraryMap || trip.id === "kii") {
         const mapLabel = local(trip.title) + ({ zh: "路线图", ja: "ルートマップ", en: " Route Map" }[language]);
-        const mapPhoto = { src: trip.itineraryMap || "assets/travel/kii/路线图.jpg", alt: mapLabel };
+        const mapPhoto = { src: trip.itineraryMap || "assets/travel/kii/路线图.jpg", preview: trip.itineraryMapPreview, alt: mapLabel };
         const mapButton = make("button", "trip-itinerary-map");
         mapButton.type = "button";
         mapButton.title = mapLabel;
@@ -775,7 +830,19 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
       section.append(make("span", "eyebrow", words[language].day.replace("{n}", day.number ?? i + 1)));
       section.append(make("h3", "", local(day.title)));
       if (day.route) section.append(make("p", "trip-route", local(day.route)));
-      section.append(paragraphsWithLinks(local(day.text), "trip-day-text"));
+      const journal = paragraphsWithLinks(local(day.text), "trip-day-text");
+      if (day.asidePhoto) {
+        const layout = make("div", "trip-day-with-image");
+        const figure = make("figure", "trip-day-figure");
+        const button = make("button", "trip-day-image");
+        button.type = "button";
+        button.setAttribute("aria-label", photoZoomLabels[language][0] + " · " + local(day.asidePhoto.alt));
+        button.append(photoImage(day.asidePhoto, local(day.title)));
+        button.addEventListener("click", () => openPhoto(day.asidePhoto, button));
+        figure.append(button, make("figcaption", "", local(day.asidePhoto.alt)));
+        layout.append(journal, figure);
+        section.append(layout);
+      } else section.append(journal);
       if (day.photos?.length) section.append(gallery(day.photos, trip, false, galleryPositions[i + 1] || 0));
       days.append(section);
     });
@@ -816,6 +883,9 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
     };
     document.querySelectorAll(".lang").forEach(button => button.addEventListener("click", () => changeDetailLanguage(button.dataset.lang)));
     if (params.get("embedded") === "1" && window.parent !== window) {
+      document.addEventListener("pointerdown", () => {
+        window.parent.postMessage({ type: "travel:dismiss-switcher" }, "*");
+      }, true);
       window.addEventListener("message", event => {
         if (event.source === window.parent && event.data?.type === "travel:scroll") {
           const target = document.getElementById(event.data.target);
