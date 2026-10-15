@@ -378,6 +378,8 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
     let preparing = false;
     let navigationToken = 0;
     let settleTimer;
+    let preparationTimer;
+    let navigationTimer;
     const queuedMoves = [];
     const imagePreparation = new WeakMap();
     function prepareImage(image) {
@@ -445,24 +447,36 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
       const token = ++navigationToken;
       preparing = true;
       const destination = track.children[index + offset];
-      await Promise.all([...destination.querySelectorAll("img")].map(prepareImage));
+      // Slow downloads (including backdrops) must not lock the navigation controls.
+      await Promise.race([
+        Promise.all([...destination.querySelectorAll("img")].map(prepareImage)),
+        new Promise(resolve => { preparationTimer = setTimeout(resolve, 800); })
+      ]);
       if (token !== navigationToken) return;
+      clearTimeout(preparationTimer);
       preparing = false;
       selected = normalize(index);
       target = index + offset;
       track.scrollTo({ left: target * slideWidth(), behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
       update();
+      // Some browsers omit scrollend or stop short of a fractional snap point.
+      navigationTimer = setTimeout(() => {
+        if (token !== navigationToken || target === null) return;
+        track.scrollTo({ left: target * slideWidth(), behavior: "instant" });
+        settle();
+      }, 1500);
       if (Math.abs(track.scrollLeft - target * slideWidth()) < 2) settle();
     }
     function move(delta) {
       if (target !== null || preparing) queuedMoves.push(delta);
       else go(selected + delta);
     }
-    function settle(finished = false) {
+    function settle() {
       clearTimeout(settleTimer);
       if (preparing) return;
       if (!track.clientWidth) return;
-      if (!finished && target !== null && Math.abs(track.scrollLeft - target * slideWidth()) >= 2) return;
+      if (target !== null && Math.abs(track.scrollLeft - target * slideWidth()) >= 2) return;
+      clearTimeout(navigationTimer);
       const physical = Math.round(track.scrollLeft / slideWidth());
       selected = normalize(physical - offset);
       target = null;
@@ -486,7 +500,15 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
       }
     }, { passive: true });
     track.addEventListener("scrollend", () => settle(true));
-    const interrupt = () => { navigationToken++; preparing = false; target = null; queuedMoves.length = 0; };
+    const interrupt = () => {
+      navigationToken++;
+      clearTimeout(preparationTimer);
+      clearTimeout(navigationTimer);
+      clearTimeout(settleTimer);
+      preparing = false;
+      target = null;
+      queuedMoves.length = 0;
+    };
     track.addEventListener("pointerdown", interrupt, { passive: true });
     track.addEventListener("wheel", interrupt, { passive: true });
     track.addEventListener("keydown", e => {
