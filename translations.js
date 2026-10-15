@@ -70,7 +70,7 @@
     titleGroup.append(credits);
     heading.append(cover, info);
     const audio = node("audio", "translation-audio");
-    audio.preload = "none";
+    audio.preload = "auto";
     audio.src = work.audio || ("assets/translation/" + (work.title === "Summering" ? "Summering.mp3" : "サマーモーメント.mp3"));
     audio.setAttribute("aria-label", work.title);
     const controls = node("div", "translation-song-player");
