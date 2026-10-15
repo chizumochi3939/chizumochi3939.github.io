@@ -94,7 +94,7 @@
   async function discoverPhotos(trip) {
     const config = trip.autoPhotos;
     if (!config) return;
-    const files = window.travelPhotoManifest?.[trip.id];
+    const files = window.travelPhotoManifest?.[trip.id] || window.travelPhotoManifest?.[config.folder.split("/").pop()];
     if (files) {
       trip.photos = files.map(filename => ({
         src: config.folder + "/" + filename,

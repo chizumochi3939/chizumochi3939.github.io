@@ -865,8 +865,66 @@ document.addEventListener("keydown",e=>{
   }
 });
 
+let upcomingTrack = null;
+let upcomingRequest = null;
+let upcomingAudioURL = null;
+let activeAudioURL = null;
+
+function nextTrackIndex(){
+  if(upcomingTrack === null){
+    upcomingTrack = playbackMode === "shuffle" ? randomTrack() : (index + 1) % playlist.length;
+  }
+  return upcomingTrack;
+}
+
+function clearUpcomingAudio(){
+  upcomingRequest?.abort();
+  upcomingRequest = null;
+  if(upcomingAudioURL) URL.revokeObjectURL(upcomingAudioURL);
+  upcomingAudioURL = null;
+  upcomingTrack = null;
+}
+
+async function prepareUpcomingAudio(){
+  if(audio.paused || audio.seeking || upcomingRequest || playbackMode === "repeat" ||
+     playlist.length < 2 || navigator.connection?.saveData ||
+     (playbackMode === "sequence" && index === playlist.length - 1) ||
+     !/^https?:$/.test(location.protocol)) return;
+  // Give the playing track priority before using bandwidth for one upcoming song.
+  let bufferedAhead = 0;
+  for(let i=0;i<audio.buffered.length;i++){
+    if(audio.buffered.start(i) <= audio.currentTime && audio.buffered.end(i) > audio.currentTime){
+      bufferedAhead = audio.buffered.end(i) - audio.currentTime;
+    }
+  }
+  if(bufferedAhead < Math.min(15, audio.duration - audio.currentTime) || bufferedAhead <= 0) return;
+  const next = nextTrackIndex();
+  const request = new AbortController();
+  upcomingRequest = request;
+  try{
+    const response = await fetch(playlist[next].src, {signal:request.signal, cache:"default"});
+    const size = Number(response.headers.get("content-length"));
+    if(!response.ok || !size || size > 32 * 1024 * 1024){
+      await response.body?.cancel();
+      return;
+    }
+    const blob = await response.blob();
+    if(upcomingRequest === request && !request.signal.aborted){
+      upcomingAudioURL = URL.createObjectURL(blob);
+    }
+  }catch(_){
+    // Prefetch is optional; normal streaming remains available on a cache miss.
+  }
+}
+for(const event of ["playing", "progress", "timeupdate"]){
+  audio.addEventListener(event, prepareUpcomingAudio);
+}
+
 function loadTrack(i,recordHistory=true){
   index=(i+playlist.length)%playlist.length;
+  const preparedURL = index === upcomingTrack ? upcomingAudioURL : null;
+  if(preparedURL) upcomingAudioURL = null;
+  clearUpcomingAudio();
   if(recordHistory){
     playbackHistory.push(index);
     if(playbackHistory.length>200) playbackHistory.shift();
@@ -877,7 +935,10 @@ function loadTrack(i,recordHistory=true){
   playerBackdrop.hidden=true;
   playerBackdrop.src=window.previewImageSource(t.cover);
   if(playerBackdrop.complete&&playerBackdrop.naturalWidth) playerBackdrop.hidden=false;
-  audio.src=t.src;
+  const previousAudioURL = activeAudioURL;
+  activeAudioURL = preparedURL;
+  audio.src=preparedURL || t.src;
+  if(previousAudioURL) URL.revokeObjectURL(previousAudioURL);
   renderProgress(0);
   document.getElementById("duration").textContent="0:00";
   document.getElementById("playerTitle").textContent=t.title;
@@ -1020,9 +1081,11 @@ function randomInitialTrack(){
 }
 
 document.getElementById("playModeBtn").addEventListener("click",()=>{
+  clearUpcomingAudio();
   playbackMode=playbackModes[(playbackModes.indexOf(playbackMode)+1)%playbackModes.length];
   playbackHistory=[index];
   updatePlaybackMode();
+  prepareUpcomingAudio();
 });
 document.getElementById("prevBtn").addEventListener("click",()=>{
   if(playbackMode==="shuffle"){
@@ -1032,7 +1095,7 @@ document.getElementById("prevBtn").addEventListener("click",()=>{
   audio.play().catch(()=>{});
 });
 document.getElementById("nextBtn").addEventListener("click",()=>{
-  loadTrack(playbackMode==="shuffle"?randomTrack():index+1);
+  loadTrack(nextTrackIndex());
   audio.play().catch(()=>{});
 });
 audio.addEventListener("ended",()=>{
@@ -1041,7 +1104,7 @@ audio.addEventListener("ended",()=>{
     return;
   }
   if(playbackMode==="repeat") audio.currentTime=0;
-  else loadTrack(playbackMode==="shuffle"?randomTrack():index+1);
+  else loadTrack(nextTrackIndex());
   audio.play().catch(()=>{});
 });
 function formatTime(seconds){

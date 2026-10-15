@@ -116,11 +116,17 @@ window.travelData = {
     },
     {
       id: "sanyo", date: "2024.08",
+      featuredPhotos: [33, 32, 9, 10, 16, 18, 23, 25, 31],
+      autoPhotos: { folder: "assets/travel/sanyou", extension: "jpg" },
+      photoDescriptions: window.sanyoTravelContent?.captions || [],
+      itineraryData: window.sanyoTravelContent?.itinerary,
+      itineraryMap: "assets/travel/sanyou/行程图.jpg",
+      itineraryMapPreview: "assets/travel/sanyou/previews/行程图.jpg.jpg",
       title: { zh: "山阳行", ja: "山陽行", en: "San'yo Journey" },
       route: {
-        zh: "名古屋 → 京都 → 大阪 → 尾道 → 广岛 → 福冈",
-        ja: "名古屋 → 京都 → 大阪 → 尾道 → 広島 → 福岡",
-        en: "Nagoya → Kyoto → Osaka → Onomichi → Hiroshima → Fukuoka"
+        zh: "名古屋 → 京都 → 宇治 → 京都 → 大阪 → 尾道 → 广岛 → 福冈",
+        ja: "名古屋 → 京都 → 宇治 → 京都 → 大阪 → 尾道 → 広島 → 福岡",
+        en: "Nagoya → Kyoto → Uji → Kyoto → Osaka → Onomichi → Hiroshima → Fukuoka"
       },
       photos: [], days: []
     },
