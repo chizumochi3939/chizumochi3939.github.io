@@ -569,3 +569,82 @@ body > .nav .nav-tools, .trip-overlay-languages {
   .trip-overlay-toolbar .trip-mini-player { grid-column: 1 / -1; grid-row: 3; }
   .trip-embedded .trip-detail { padding-top: 180px; }
 }
+
+/* Keep touch navigation and player controls on separate, full-width rows. */
+@media (max-width: 800px) {
+  body > .nav, .trip-overlay-toolbar, .translation-toolbar {
+    width: 100%;
+    min-width: 0;
+    height: 144px;
+    padding: 0 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: 48px 48px 48px;
+    column-gap: 8px;
+  }
+  body > .nav .brand, .trip-overlay-back, .translation-toolbar .translation-back {
+    position: static;
+    transform: none;
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    max-width: 100%;
+    font-size: 14px;
+    white-space: normal;
+    line-height: 1.3;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  body > .nav .nav-tools, .trip-overlay-languages,
+  .translation-toolbar .translation-languages {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    gap: 0;
+    margin: 0;
+  }
+  .nav .lang, .trip-overlay-languages .lang, .translation-languages .lang {
+    min-width: 40px;
+    min-height: 44px;
+    padding: 4px;
+  }
+  body > .nav nav, .trip-overlay-left {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    min-width: 0;
+    transform: none;
+    justify-content: space-between;
+    gap: 4px;
+    overflow: visible;
+    white-space: normal;
+    font-size: 12px;
+    line-height: 1.3;
+  }
+  body > .nav nav > a, .trip-overlay-left > a,
+  .trip-switcher > summary, .music-nav-item > a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+  body > .nav nav > a, .trip-overlay-left > a { flex: 1; min-width: 0; }
+  .music-nav-item { gap: 0; flex-shrink: 0; }
+  .music-nav-button { width: 32px; height: 44px; }
+  .home-nav-player, .trip-mini-player, .trip-overlay-toolbar .trip-mini-player {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    width: 100%;
+    padding: 0;
+    max-width: 360px;
+  }
+  .trip-mini-controls { width: 100%; justify-content: space-evenly; gap: 2px; }
+  .trip-mini-controls button { width: 44px; height: 44px; flex-shrink: 0; }
+  .translation-toolbar { height: 96px; grid-template-rows: 48px 48px; }
+  .translation-toolbar .home-nav-player { grid-row: 2; }
+  .trip-embedded .trip-detail { padding-top: 164px; }
+  .trip-photo-track, .event-track { max-width: 100%; overscroll-behavior-x: contain; }
+}

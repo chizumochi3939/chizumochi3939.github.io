@@ -259,10 +259,12 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
       close.type = "button";
       dialog.append(image, close);
       document.body.append(dialog);
+      window.attachImageGestures(dialog, image);
       photoViewer = { dialog, image, close, token: 0, trigger: null, overflow: "" };
       close.addEventListener("click", () => dialog.close());
       dialog.addEventListener("click", e => { if (e.target === dialog) dialog.close(); });
       dialog.addEventListener("close", () => {
+        if (window.parent !== window) window.parent.postMessage({ type: "travel:image-viewer", open: false }, "*");
         photoViewer.token++;
         document.body.style.overflow = photoViewer.overflow;
         photoViewer.trigger?.focus({ preventScroll: true });
@@ -278,6 +280,7 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
     viewer.close.title = photoZoomLabels[language][1];
     viewer.close.setAttribute("aria-label", viewer.close.title);
     viewer.dialog.showModal();
+    if (window.parent !== window) window.parent.postMessage({ type: "travel:image-viewer", open: true }, "*");
     document.body.style.overflow = "hidden";
     // Keep the preview visible while the full-resolution file loads.
     if (photo.preview) {
@@ -407,10 +410,6 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
     // clientWidth rounds fractional pixels; multiplying it drifts away from snap points.
     const slideWidth = () => cachedWidth || (cachedWidth = slides[0].getBoundingClientRect().width || track.clientWidth);
     function update() {
-      if (detail) {
-        const nearby = new Set([selected, normalize(selected - 1), normalize(selected + 1)]);
-        slides.forEach((slide, i) => { slide.style.visibility = nearby.has(i) ? "visible" : "hidden"; });
-      }
       previous.disabled = next.disabled = items.length < 2;
       counter.textContent = (selected + 1) + " / " + items.length;
       if (caption) {
@@ -443,6 +442,15 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
         }
       });
     }
+    // Native touch scrolling can cross several slides without a button navigation.
+    const slideObserver = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (entry.isIntersecting && nearViewport) {
+          entry.target.querySelectorAll("img").forEach(prepareImage);
+        }
+      }
+    }, { root: track, rootMargin: "0px 100%", threshold: 0 });
+    [...track.children].forEach(slide => slideObserver.observe(slide));
     async function go(index) {
       const token = ++navigationToken;
       preparing = true;
@@ -530,7 +538,7 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
     galleries.push({
       update,
       getSelected: () => selected,
-      dispose: () => { interrupt(); observer.disconnect(); visibilityObserver.disconnect(); clearTimeout(settleTimer); }
+      dispose: () => { interrupt(); observer.disconnect(); visibilityObserver.disconnect(); slideObserver.disconnect(); clearTimeout(settleTimer); }
     });
     update();
     return root;
@@ -579,6 +587,8 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
           if (trip.id === currentTripId) return;
           currentTripId = trip.id;
           url.searchParams.set("embedded", "1");
+          frame.style.visibility = "hidden";
+          frame.setAttribute("aria-busy", "true");
           frame.src = url.href;
           updateTripList();
         });
@@ -656,6 +666,7 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
     let transition = null;
     let closing = false;
     let opening = false;
+    let pendingSection = null;
     let returnFocus = null;
     const animateOverlay = opening => {
       transition?.cancel();
@@ -673,6 +684,9 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
       if (overlay.hidden || closing) return;
       if (!document.getElementById("playlistPanel")?.hidden) document.getElementById("playlistClose")?.click();
       closing = true;
+      opening = false;
+      pendingSection = null;
+      toolbar.hidden = false;
       switcher.open = false;
       await animateOverlay(false).finished.catch(() => {});
       overlay.hidden = true;
@@ -692,6 +706,12 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
       url.searchParams.set("lang", homeLanguage);
       opening = true;
       overlay.dataset.previousOverflow = document.body.style.overflow;
+      overlay.hidden = false;
+      frame.style.visibility = "hidden";
+      frame.setAttribute("aria-busy", "true");
+      animateOverlay(true);
+      document.body.style.overflow = "hidden";
+      back.focus({ preventScroll: true });
       frame.src = url.href;
       frame.title = words[language].itinerary;
       setDetailLanguage(homeLanguage);
@@ -700,6 +720,10 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
     back.addEventListener("click", close);
     links.forEach(link => link.addEventListener("click", event => {
       event.preventDefault();
+      if (frame.getAttribute("aria-busy") === "true") {
+        pendingSection = link;
+        return;
+      }
       frame.contentWindow?.postMessage({ type: "travel:scroll", target: link.dataset.target, offset: toolbar.getBoundingClientRect().height + 20 }, "*");
     }));
     previous.addEventListener("click", () => document.getElementById("prevBtn").click());
@@ -711,8 +735,12 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
     window.addEventListener("site-language-change", event => setDetailLanguage(event.detail));
     frame.addEventListener("load", () => setDetailLanguage(detailLanguage));
     window.addEventListener("message", event => {
+      if (event.source === frame.contentWindow && event.data?.type === "travel:image-viewer" && !overlay.hidden) {
+        toolbar.hidden = !!event.data.open;
+      }
       if (event.source === frame.contentWindow && event.data?.type === "travel:dismiss-switcher") {
         switcher.open = false;
+        if (!document.getElementById("playlistPanel")?.hidden) document.getElementById("playlistClose")?.click();
       }
       if (event.source === frame.contentWindow && event.data?.type === "travel:request-photos") {
         const trip = data.trips.find(item => item.id === event.data.trip);
@@ -722,21 +750,22 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
         location.replace(new URL("index.html", location.href).href);
         return;
       }
-      if (event.source === frame.contentWindow && event.data?.type === "travel:ready") {
+      if (event.source === frame.contentWindow && event.data?.type === "travel:ready" && !overlay.hidden && !closing) {
         setDetailLanguage(detailLanguage);
-        if (opening) {
-          opening = false;
-          overlay.hidden = false;
-          animateOverlay(true);
-          document.body.style.overflow = "hidden";
-          back.focus({ preventScroll: true });
+        frame.style.visibility = "visible";
+        frame.removeAttribute("aria-busy");
+        opening = false;
+        if (pendingSection) {
+          pendingSection.click();
+          pendingSection = null;
         }
       }
     });
     for (const event of ["play", "pause", "playing", "ended", "loadedmetadata"]) audio.addEventListener(event, sync);
+    window.addEventListener("player-track-change", sync);
     new MutationObserver(sync).observe(document.querySelector(".player-info"), { childList: true, subtree: true, characterData: true });
     document.addEventListener("keydown", event => {
-      if (event.key === "Escape" && !overlay.hidden) close();
+      if (event.key === "Escape" && !event.defaultPrevented && !overlay.hidden) close();
     });
     document.addEventListener("click", event => {
       const link = event.target.closest('a[href*="trip.html?trip="]');
@@ -761,6 +790,7 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
     });
     if (data.map) {
       const mapImage = photoImage({ src: local(data.map), alt: words[language].map }, "");
+      mapImage.width = mapImage.height = 1500;
       mapImage.loading = "lazy";
       const zoomButton = make("button", "travel-map-zoom");
       zoomButton.type = "button";
@@ -773,6 +803,7 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
       fullImage.loading = "eager";
       dialog.append(fullImage, close);
       document.body.append(dialog);
+      window.attachImageGestures(dialog, fullImage);
       const zoomLabels = { zh: ["放大制县等级地图", "关闭大图"], ja: ["経県値マップを拡大", "閉じる"], en: ["Enlarge prefecture map", "Close image"] };
       const updateMapLabels = () => {
         const source = local(data.map);
@@ -920,8 +951,6 @@ What follows is my day-by-day travel journal. It is fairly long, so feel free to
     }
     renderDetail();
     if (params.get("embedded") === "1" && window.parent !== window) {
-      const firstImage = document.querySelector("#tripGallery .trip-photo-slide:not([data-loop-clone]) > img");
-      if (firstImage?.decode) await firstImage.decode().catch(() => {});
       window.parent.postMessage({ type: "travel:ready" }, "*");
     }
   } else {

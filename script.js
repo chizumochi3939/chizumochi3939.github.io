@@ -775,8 +775,8 @@ playlist.forEach((track,i)=>{
   marker.textContent="\u266b";
   button.append(cover,info,marker);
   button.addEventListener("click",()=>{
-    if(index!==i) loadTrack(i);
-    audio.play().catch(()=>{});
+    if(index!==i) loadTrack(i,true,true);
+    else audio.play().catch(()=>{});
     setPlaylistOpen(false,true);
   });
   row.append(button);
@@ -825,7 +825,7 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Escape"&&!playlistPanel.hidden){e.preventDefault();setPlaylistOpen(false,true);}
 });
 playerRoot.parentElement.addEventListener("focusout",e=>{
-  if(!playlistPanel.hidden&&!playlistPanel.contains(e.relatedTarget)&&![...playlistTriggers].some(button=>button.contains(e.relatedTarget))) setPlaylistOpen(false);
+  if(e.relatedTarget&&!playlistPanel.hidden&&!playlistPanel.contains(e.relatedTarget)&&![...playlistTriggers].some(button=>button.contains(e.relatedTarget))) setPlaylistOpen(false);
 });
 playlistItems.addEventListener("keydown",e=>{
   const buttons=[...playlistItems.querySelectorAll("li:not([hidden]) button")];
@@ -869,6 +869,23 @@ let upcomingTrack = null;
 let upcomingRequest = null;
 let upcomingAudioURL = null;
 let activeAudioURL = null;
+const preparedCovers = new Map();
+function prepareCover(trackIndex){
+  const source = window.previewImageSource(playlist[trackIndex].cover);
+  if(!preparedCovers.has(source)){
+    const image = new Image();
+    image.decoding = "async";
+    image.fetchPriority = "low";
+    image.src = source;
+    image.decode?.().catch(()=>{});
+    preparedCovers.set(source,image);
+    if(preparedCovers.size > 4) preparedCovers.delete(preparedCovers.keys().next().value);
+  }
+}
+function prepareNextCover(){
+  if(navigator.connection?.saveData || playlist.length < 2) return;
+  prepareCover(nextTrackIndex());
+}
 
 function nextTrackIndex(){
   if(upcomingTrack === null){
@@ -897,7 +914,7 @@ async function prepareUpcomingAudio(){
       bufferedAhead = audio.buffered.end(i) - audio.currentTime;
     }
   }
-  if(bufferedAhead < Math.min(15, audio.duration - audio.currentTime) || bufferedAhead <= 0) return;
+  if(bufferedAhead < Math.min(8, audio.duration - audio.currentTime) || bufferedAhead <= 0) return;
   const next = nextTrackIndex();
   const request = new AbortController();
   upcomingRequest = request;
@@ -920,7 +937,7 @@ for(const event of ["playing", "progress", "timeupdate"]){
   audio.addEventListener(event, prepareUpcomingAudio);
 }
 
-function loadTrack(i,recordHistory=true){
+function loadTrack(i,recordHistory=true,autoplay=false){
   index=(i+playlist.length)%playlist.length;
   const preparedURL = index === upcomingTrack ? upcomingAudioURL : null;
   if(preparedURL) upcomingAudioURL = null;
@@ -932,13 +949,14 @@ function loadTrack(i,recordHistory=true){
   const t=playlist[index];
 
   cancelScrub();
-  playerBackdrop.hidden=true;
-  playerBackdrop.src=window.previewImageSource(t.cover);
-  if(playerBackdrop.complete&&playerBackdrop.naturalWidth) playerBackdrop.hidden=false;
   const previousAudioURL = activeAudioURL;
   activeAudioURL = preparedURL;
   audio.src=preparedURL || t.src;
+  if(autoplay) audio.play().catch(syncPlaybackUI);
   if(previousAudioURL) URL.revokeObjectURL(previousAudioURL);
+  playerBackdrop.hidden=true;
+  playerBackdrop.src=window.previewImageSource(t.cover);
+  if(playerBackdrop.complete&&playerBackdrop.naturalWidth) playerBackdrop.hidden=false;
   renderProgress(0);
   document.getElementById("duration").textContent="0:00";
   document.getElementById("playerTitle").textContent=t.title;
@@ -948,8 +966,9 @@ function loadTrack(i,recordHistory=true){
   document.getElementById("navPlayerTitle").textContent=t.title;
   document.getElementById("navPlayerArtist").textContent=artistText(t);
   navPlayer.title=t.title+" · "+artistText(t);
-  positionNavPlayer();
   updatePlaylistSelection();
+  window.dispatchEvent(new Event("player-track-change"));
+  prepareNextCover();
 }
 function togglePlay(){
  if(audio.paused){audio.play().catch(syncPlaybackUI);}else{audio.pause();}
@@ -1085,27 +1104,27 @@ document.getElementById("playModeBtn").addEventListener("click",()=>{
   playbackMode=playbackModes[(playbackModes.indexOf(playbackMode)+1)%playbackModes.length];
   playbackHistory=[index];
   updatePlaybackMode();
+  prepareNextCover();
   prepareUpcomingAudio();
 });
 document.getElementById("prevBtn").addEventListener("click",()=>{
   if(playbackMode==="shuffle"){
     if(playbackHistory.length>1) playbackHistory.pop();
-    loadTrack(playbackHistory.at(-1)??index,false);
-  }else loadTrack(index-1);
-  audio.play().catch(()=>{});
+    loadTrack(playbackHistory.at(-1)??index,false,true);
+  }else loadTrack(index-1,true,true);
 });
 document.getElementById("nextBtn").addEventListener("click",()=>{
-  loadTrack(nextTrackIndex());
-  audio.play().catch(()=>{});
+  loadTrack(nextTrackIndex(),true,true);
 });
 audio.addEventListener("ended",()=>{
   if(playbackMode==="sequence"&&index===playlist.length-1){
     play.textContent="▶";
     return;
   }
-  if(playbackMode==="repeat") audio.currentTime=0;
-  else loadTrack(nextTrackIndex());
-  audio.play().catch(()=>{});
+  if(playbackMode==="repeat"){
+    audio.currentTime=0;
+    audio.play().catch(()=>{});
+  }else loadTrack(nextTrackIndex(),true,true);
 });
 function formatTime(seconds){
   if(!isFinite(seconds)) return "0:00";

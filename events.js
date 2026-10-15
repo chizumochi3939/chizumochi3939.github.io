@@ -44,88 +44,9 @@
   let viewerPhotos = photos;
   let text;
   const fullImage = dialog.querySelector(".event-full-image");
-  const viewport = document.createElement("div");
-  viewport.className = "event-image-viewport";
-  fullImage.replaceWith(viewport);
-  viewport.append(fullImage);
-  fullImage.draggable = false;
-  let zoom = 1;
-  let offsetX = 0;
-  let offsetY = 0;
-  let drag = null;
-  let clickStart = null;
-  let movedSincePress = false;
-  function isOutsideImage(x, y) {
-    if (!fullImage.naturalWidth || fullImage.style.visibility === "hidden") return true;
-    const bounds = viewport.getBoundingClientRect();
-    const fit = Math.min(bounds.width / fullImage.naturalWidth, bounds.height / fullImage.naturalHeight);
-    const halfWidth = fullImage.naturalWidth * fit * zoom / 2;
-    const halfHeight = fullImage.naturalHeight * fit * zoom / 2;
-    const centerX = bounds.left + bounds.width / 2 + offsetX;
-    const centerY = bounds.top + bounds.height / 2 + offsetY;
-    return Math.abs(x - centerX) > halfWidth || Math.abs(y - centerY) > halfHeight;
-  }
-  function renderImage() {
-    const fit = Math.min(viewport.clientWidth / (fullImage.naturalWidth || 1), viewport.clientHeight / (fullImage.naturalHeight || 1));
-    const limitX = Math.max(0, ((fullImage.naturalWidth || 0) * fit * zoom - viewport.clientWidth) / 2);
-    const limitY = Math.max(0, ((fullImage.naturalHeight || 0) * fit * zoom - viewport.clientHeight) / 2);
-    offsetX = Math.max(-limitX, Math.min(limitX, offsetX));
-    offsetY = Math.max(-limitY, Math.min(limitY, offsetY));
-    fullImage.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${zoom})`;
-    viewport.classList.toggle("is-zoomed", zoom > 1);
-  }
-  function stopDrag() {
-    if (drag && viewport.hasPointerCapture(drag.id)) viewport.releasePointerCapture(drag.id);
-    drag = null;
-    viewport.classList.remove("is-dragging");
-  }
-  function resetImage() {
-    stopDrag();
-    zoom = 1;
-    offsetX = offsetY = 0;
-    renderImage();
-  }
-  function zoomAt(nextZoom, clientX, clientY) {
-    const bounds = viewport.getBoundingClientRect();
-    const x = clientX - bounds.left - bounds.width / 2;
-    const y = clientY - bounds.top - bounds.height / 2;
-    const next = Math.max(1, Math.min(6, nextZoom));
-    offsetX = x - (x - offsetX) * next / zoom;
-    offsetY = y - (y - offsetY) * next / zoom;
-    zoom = next;
-    renderImage();
-  }
-  viewport.addEventListener("wheel", event => {
-    event.preventDefault();
-    const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? viewport.clientHeight : 1);
-    zoomAt(zoom * Math.exp(-delta * .002), event.clientX, event.clientY);
-  }, { passive: false });
-  viewport.addEventListener("dblclick", event => {
-    if (zoom > 1) resetImage();
-    else zoomAt(2.5, event.clientX, event.clientY);
-  });
-  viewport.addEventListener("pointerdown", event => {
-    clickStart = { x: event.clientX, y: event.clientY, outside: isOutsideImage(event.clientX, event.clientY) };
-    movedSincePress = false;
-    if (event.button !== 0 || zoom <= 1 || drag) return;
-    event.preventDefault();
-    drag = { id: event.pointerId, x: event.clientX, y: event.clientY };
-    viewport.setPointerCapture(event.pointerId);
-    viewport.classList.add("is-dragging");
-  });
-  viewport.addEventListener("pointermove", event => {
-    if (clickStart && Math.hypot(event.clientX - clickStart.x, event.clientY - clickStart.y) > 5) movedSincePress = true;
-    if (!drag || drag.id !== event.pointerId) return;
-    offsetX += event.clientX - drag.x;
-    offsetY += event.clientY - drag.y;
-    drag.x = event.clientX;
-    drag.y = event.clientY;
-    renderImage();
-  });
-  for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) viewport.addEventListener(type, stopDrag);
-  fullImage.addEventListener("load", renderImage);
-  dialog.addEventListener("close", resetImage);
-  window.addEventListener("resize", () => { if (dialog.open) renderImage(); });
+  const gestures = window.attachImageGestures(dialog, fullImage);
+  const resetImage = gestures.reset;
+  const renderImage = gestures.render;
   async function showViewer() {
     const request = ++viewerRequest;
     const src = viewerPhotos[viewerIndex];
@@ -157,6 +78,7 @@
     showViewer();
     dialog.showModal();
   }
+  const photoLoaders = [];
   photos.forEach((src, index) => {
     const button = document.createElement("button");
     button.type = "button";
@@ -165,18 +87,26 @@
     img.alt = "";
     img.decoding = "async";
     img.style.visibility = "hidden";
+    let loading = false;
+    let loaded = false;
     const loadPhoto = async () => {
+      if (loading || loaded) return;
+      loading = true;
       try {
-        const image = await prepare(window.mobilePreviewSource(preview(src))).catch(() => prepare(src));
+        const image = await prepare(window.mobilePreviewSource(preview(src)))
+          .catch(() => prepare(preview(src))).catch(() => prepare(src));
         img.src = image.src;
         await img.decode();
         img.style.visibility = "visible";
-      } catch (_) { /* Allow a later visit to retry failed requests. */ }
+        loaded = true;
+        observer.disconnect();
+      } catch (_) { /* Retry when the user visits this slide again. */ }
+      finally { loading = false; }
     };
+    photoLoaders.push(loadPhoto);
     const observer = new IntersectionObserver(entries => {
       if (entries.some(entry => entry.isIntersecting)) {
         loadPhoto();
-        observer.disconnect();
       }
     }, { rootMargin: "300px 0px" });
     observer.observe(button);
@@ -186,10 +116,12 @@
   });
   function move(delta) {
     const index = (active + delta + photos.length) % photos.length;
+    photoLoaders[index]();
     track.scrollTo({ left: index * track.clientWidth, behavior: "smooth" });
   }
   track.addEventListener("scroll", () => {
     active = Math.round(track.scrollLeft / track.clientWidth);
+    for (const offset of [-1, 0, 1]) photoLoaders[(active + offset + photos.length) % photos.length]();
     root.querySelector(".event-count").textContent = `${active + 1} / ${photos.length}`;
   }, { passive: true });
   root.querySelector(".event-prev").onclick = () => move(-1);
@@ -204,8 +136,6 @@
   dialog.querySelector(".event-close").onclick = () => dialog.close();
   dialog.addEventListener("click", event => {
     if (event.target === dialog) dialog.close();
-    if (event.target === viewport && clickStart?.outside && !movedSincePress && isOutsideImage(event.clientX, event.clientY)) dialog.close();
-    clickStart = null;
   });
   dialog.addEventListener("keydown", event => {
     if (event.key === "ArrowLeft" || event.key === "ArrowRight") {

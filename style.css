@@ -1,5 +1,25 @@
 /* Theme and shared elements */
 
+.image-zoom-dialog .image-zoom-viewport {
+  position: relative; width: 100%; height: 100%; min-height: 0;
+  overflow: hidden; touch-action: none; user-select: none; cursor: zoom-in;
+}
+.image-zoom-dialog .image-zoom-viewport.is-zoomed { cursor: grab; }
+.image-zoom-dialog .image-zoom-viewport.is-zoomed:active { cursor: grabbing; }
+.image-zoom-dialog .image-zoom-viewport > .image-zoom-image {
+  display: block; width: 100%; height: 100%; max-width: none; max-height: none;
+  object-fit: contain; transform-origin: center; pointer-events: none;
+}
+
+.trip-overlay:has(.trip-overlay-frame[aria-busy="true"])::after {
+  content: ""; position: absolute; top: 50%; left: calc(50% - 14px);
+  width: 28px; height: 28px; border: 3px solid var(--line);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: image-loading .8s linear infinite; pointer-events: none;
+}
+@keyframes image-loading { to { transform: rotate(360deg); } }
+@media (max-width: 800px) { #playlistSearch { font-size: 16px; } }
+
 :root {
   --bg: #f6f5f0;
   --surface: #fff;
@@ -1518,4 +1538,28 @@ footer {
   .instrumental-card .song-preview-row {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+@media (max-width: 800px) {
+  .hero, .about-grid, .music-intro, .creator-area { grid-template-columns: minmax(0, 1fr); }
+  .hero { padding: 36px 18px 48px; gap: 28px; }
+  .hero > *, .section > *, .contact-links > * { min-width: 0; max-width: 100%; }
+  .hero h1 { font-size: 44px; letter-spacing: 0; overflow-wrap: anywhere; }
+  .hero-actions { flex-wrap: wrap; }
+  .section { padding: 48px 18px; }
+  .hero-player { min-height: 0; }
+  .music-intro h3 { white-space: normal; }
+  .contact { padding: 40px 18px; }
+  .contact h2 { font-size: 24px; line-height: 1.5; }
+  .contact-links { overflow-wrap: anywhere; }
+  .translation-info { width: 100%; }
+  .translation-credits { grid-template-columns: auto minmax(0, 1fr); }
+  .translation-credits dd, .translation-lyrics { overflow-wrap: anywhere; }
+  .translation-lyrics { padding: 16px; }
+  .instrumental-audio { width: 100%; min-width: 0; }
+  .writing-grid { grid-template-columns: minmax(0, 1fr); }
+  .writing-category { min-width: 0; padding: 22px; }
+  .writing-category h3 { font-size: 24px; overflow-wrap: anywhere; }
+  .writing-work { gap: 12px; }
+  .writing-work-title { overflow-wrap: anywhere; }
 }
