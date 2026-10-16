@@ -58,6 +58,37 @@ a {
   text-decoration: none;
 }
 
+a[href] {
+  cursor: pointer;
+  transition: color .16s ease, background-color .16s ease, outline-color .16s ease;
+}
+
+a[href]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Hover feedback changes paint only, keeping text and gallery geometry stable. */
+@media (hover: hover) and (pointer: fine) {
+  a[href]:not(.button):not(.song-preview-cover):not(.trip-photo-slide):not(.trip-summary):not(.writing-work):not(.trip-switcher-option):hover,
+  :is(.translation-text-link, .translation-excerpt, .translation-read, .event-posters):hover {
+    color: var(--accent);
+  }
+
+  :is(a.song-preview-cover, a.trip-photo-slide, a.trip-summary, a.writing-work,
+      .translation-cover-button, .event-photo, .travel-map-zoom, .trip-day-image, .trip-photo-zoom):hover {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+
+  a.button.primary:hover { background: var(--accent); color: var(--surface); }
+  a.button.secondary:hover { background: var(--accent-soft); color: var(--accent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  a[href] { transition: none; }
+}
+
 [hidden] {
   display: none !important;
 }

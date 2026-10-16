@@ -1,0 +1,41 @@
+.project-reading { max-width: 780px; margin: auto; padding: 48px 30px 96px; }
+.project-heading h1 { font-size: 36px; line-height: 1.4; letter-spacing: 0; margin: 12px 0 24px; overflow-wrap: anywhere; }
+.project-intro { line-height: 1.9; text-indent: 2em; }
+.project-intro a, .project-sections a { text-decoration: underline; text-underline-offset: 4px; text-decoration-skip-ink: none; }
+.project-intro a { color: var(--accent); }
+.project-sections { display: flex; gap: 28px; margin-top: 28px; }
+.project-sections a { display: flex; align-items: center; min-height: 44px; font-size: 14px; }
+.project-music, .project-novel { margin-top: 48px; scroll-margin-top: 136px; }
+.project-reading h2 { font-size: 22px; line-height: 1.5; letter-spacing: 0; margin: 0 0 24px; }
+.project-song-list { list-style: none; padding: 12px 24px; margin: 0; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 6px; background: var(--surface); }
+.project-song { display: grid; grid-template-columns: 48px minmax(0, 1fr) 76px; gap: 12px; align-items: center; min-height: 68px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.project-song:last-child { border-bottom: 0; }
+.project-song-number, .project-part-number { font-family: "Monotype Corsiva", "Baskerville", "Palatino Linotype", Georgia, serif; font-style: italic; font-weight: 400; letter-spacing: 0; }
+.project-song-number { font-size: 44px; line-height: 1; color: var(--accent); }
+.project-song-name { min-width: 0; font-size: 17px; overflow-wrap: anywhere; }
+a.project-song-name { display: flex; align-items: center; gap: 8px; min-height: 44px; text-decoration: underline; text-underline-offset: 4px; }
+a.project-song-name:hover { color: var(--accent); }
+.project-song-arrow { color: var(--accent); }
+.project-song-date { font-size: 14px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.project-language-note { color: var(--muted); font-size: 13px; }
+.project-prose { margin: 40px 0 0; font-family: "Noto Serif SC", "Songti SC", SimSun, serif; }
+.project-chapter-title { font-size: 24px; line-height: 1.6; letter-spacing: 0; margin: 0; }
+.project-epigraph { margin: 16px 0 48px; color: var(--muted); }
+.project-chapter-part + .project-chapter-part { margin-top: 64px; }
+.project-part-number { font-size: 36px; text-align: center; margin: 32px 0; }
+.project-scene + .project-scene { margin-top: 32px; }
+.project-scene p { font-size: 17px; line-height: 2.1; text-indent: 2em; margin: 0 0 18px; overflow-wrap: anywhere; }
+.project-dialog a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+@media (max-width: 800px) {
+  .project-reading { padding: 28px 18px 60px; }
+  .project-heading h1 { font-size: 28px; }
+  .project-reading h2 { font-size: 20px; }
+  .project-song-list { padding: 8px 12px; }
+  .project-song { grid-template-columns: 34px minmax(0, 1fr) 58px; gap: 8px; }
+  .project-song-number { font-size: 36px; }
+  .project-song-name { font-size: 15px; }
+  a.project-song-name { gap: 8px; flex-wrap: wrap; }
+  .project-song-date { font-size: 12px; }
+  .project-chapter-title { font-size: 21px; }
+  .project-scene p { font-size: 16px; line-height: 2; }
+}
