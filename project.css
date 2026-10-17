@@ -13,7 +13,7 @@
 .project-song-number, .project-part-number { font-family: "Monotype Corsiva", "Baskerville", "Palatino Linotype", Georgia, serif; font-style: italic; font-weight: 400; letter-spacing: 0; }
 .project-song-number { font-size: 44px; line-height: 1; color: var(--accent); }
 .project-song-name { min-width: 0; font-size: 17px; overflow-wrap: anywhere; }
-a.project-song-name { display: flex; align-items: center; gap: 8px; min-height: 44px; text-decoration: underline; text-underline-offset: 4px; }
+a.project-song-name { display: flex; align-items: center; gap: 8px; min-height: 44px; text-decoration: none; }
 a.project-song-name:hover { color: var(--accent); }
 .project-song-arrow { color: var(--accent); }
 .project-song-date { font-size: 14px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }

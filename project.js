@@ -113,7 +113,6 @@
         name.target = '_blank';
         name.rel = 'noopener noreferrer';
         name.title = text.play;
-        name.append(node('span', 'project-song-arrow', '↗'));
       }
       row.append(number, name, node('span', 'project-song-date', source.querySelector('small').textContent));
       songs.append(row);

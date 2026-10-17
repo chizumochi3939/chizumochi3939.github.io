@@ -19,7 +19,9 @@ zh: {
 "about.mainInterests":"主要属性：<a href=\"#music\">术力口 | 初音未来</a>",
 "about.interests":"<a href=\"#originalMusicHeading\">作曲</a> | <a href=\"#coversHeading\">翻唱</a> | <a href=\"#writing\">写文</a> | 原神 | 卡牌 | 解密 | 百合 | 日常番",
 "about.otherLabel":"其他",
-"about.other":"<span class=\"about-other-paragraph\">性格温良之人，有进行活动的平台（QQ，微信，bilibili，小红书，网易云音乐等）全部都叫chizumochi，扩列互关大欢迎。</span><span class=\"about-other-paragraph\">互关请在对应平台私信，扩列请查看该网页底部的<a href=\"#contact\">联系部分（Email）</a>，直接加我的QQ，备注称呼即可。</span>",
+"about.xiaohongshu":"小红书",
+"about.xiaohongshu":"小红书",
+"about.other":"性格温良之人，有进行活动的平台（QQ，微信，bilibili，小红书，网易云音乐等）全部都叫chizumochi，扩列互关大欢迎。互关请在对应平台私信，扩列请直接加我的QQ，备注称呼即可。",
 "about.favoritesLabel":"自推",
 "about.favorites":"初音未来 | 纳西妲 | 希格雯 | 香风智乃",
 "about.projectsLabel":"企划",
@@ -129,7 +131,9 @@ ja:{
 "about.mainInterests":"主な好きなもの：<a href=\"#music\">Vocaloid | 初音ミク</a>",
 "about.interests":"<a href=\"#originalMusicHeading\">作曲</a> | <a href=\"#coversHeading\">歌ってみた</a> | <a href=\"#writing\">執筆</a> | 原神 | カードゲーム | 謎解き | 百合 | 日常系アニメ",
 "about.otherLabel":"その他",
-"about.other":"<span class=\"about-other-paragraph\">穏やかな性格です。活動しているSNSやサービス（QQ、WeChat、bilibili、小紅書、NetEase Cloud Musicなど）では、すべてchizumochiという名前を使っています。お友達や相互フォローは大歓迎です。</span><span class=\"about-other-paragraph\">相互フォローをご希望の方は、各サービスのDMでご連絡ください。お友達になってくださる方は、このページ最下部の<a href=\"#contact\">連絡先（Email）</a>をご覧のうえ、QQに直接友達申請を送ってください。呼んでほしいお名前を添えていただければ大丈夫です。</span>",
+"about.xiaohongshu":"小紅書",
+"about.xiaohongshu":"小紅書",
+"about.other":"穏やかな性格です。活動しているSNSやサービス（QQ、WeChat、bilibili、小紅書、NetEase Cloud Musicなど）では、すべてchizumochiという名前を使っています。お友達や相互フォローは大歓迎です。相互フォローをご希望の方は、各サービスのDMでご連絡ください。お友達になってくださる方は、QQに直接友達申請を送ってください。呼んでほしいお名前を添えていただければ大丈夫です。",
 "about.favoritesLabel":"推し",
 "about.favorites":"初音ミク | ナヒーダ | シグウィン | 香風智乃",
 "about.projectsLabel":"企画",
@@ -236,7 +240,9 @@ en:{
 "about.mainInterests":"Main interests: <a href=\"#music\">Vocaloid | Hatsune Miku</a>",
 "about.interests":"<a href=\"#originalMusicHeading\">Composing</a> | <a href=\"#coversHeading\">Singing covers</a> | <a href=\"#writing\">Writing</a> | Genshin Impact | Card games | Puzzles | Yuri | Slice-of-life anime",
 "about.otherLabel":"More About Me",
-"about.other":"<span class=\"about-other-paragraph\">I'm a gentle, easygoing person. I go by chizumochi on every platform where I'm active, including QQ, WeChat, bilibili, Xiaohongshu, and NetEase Cloud Music. New friends and mutual follows are always welcome!</span><span class=\"about-other-paragraph\">For mutual follows, please send me a private message on the relevant platform. To connect on QQ, see the <a href=\"#contact\">contact section (Email)</a> at the bottom of this page and add me directly. Just include the name you'd like me to call you in your request.</span>",
+"about.xiaohongshu":"Xiaohongshu",
+"about.xiaohongshu":"Xiaohongshu",
+"about.other":"I'm a gentle, easygoing person. I go by chizumochi on every platform where I'm active, including QQ, WeChat, bilibili, Xiaohongshu, and NetEase Cloud Music. New friends and mutual follows are always welcome! For mutual follows, please send me a private message on the relevant platform. To become friends, add me directly on QQ and include the name you'd like me to call you in your request.",
 "about.favoritesLabel":"Favorites",
 "about.favorites":"Hatsune Miku | Nahida | Sigewinne | Chino Kafu",
 "about.projectsLabel":"Projects",
@@ -1251,6 +1257,41 @@ progress.addEventListener("keydown",(e)=>{
   e.preventDefault();
   audio.currentTime=clamp(target,0,audio.duration);
   renderProgress(audio.currentTime);
+});
+
+document.querySelectorAll('.about-sns a[href^="assets/QR"]').forEach(link => {
+  link.removeAttribute("target");
+  link.addEventListener("click", event => {
+    event.preventDefault();
+    let dialog = document.getElementById("snsQrDialog");
+    if (!dialog) {
+      dialog = document.createElement("dialog");
+      dialog.id = "snsQrDialog";
+      dialog.className = "travel-map-dialog travel-photo-dialog";
+      const image = document.createElement("img");
+      const close = document.createElement("button");
+      close.type = "button";
+      close.className = "travel-map-close";
+      close.textContent = "×";
+      close.addEventListener("click", () => dialog.close());
+      dialog.append(image, close);
+      document.body.append(dialog);
+      window.attachImageGestures(dialog, image);
+    }
+    const image = dialog.querySelector("img");
+    image.src = link.href;
+    image.alt = link.parentElement.textContent;
+    dialog.setAttribute("aria-label", image.alt);
+    const close = dialog.querySelector("button");
+    close.setAttribute("aria-label", ({zh:"关闭",ja:"閉じる",en:"Close"})[document.documentElement.lang] || "关闭");
+    const overflow = document.body.style.overflow;
+    dialog.addEventListener("close", () => {
+      document.body.style.overflow = overflow;
+      link.focus({preventScroll:true});
+    }, {once:true});
+    dialog.showModal();
+    document.body.style.overflow = "hidden";
+  });
 });
 
 const aboutFlow = document.querySelector(".about-grid");

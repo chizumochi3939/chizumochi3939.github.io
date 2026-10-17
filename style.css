@@ -921,6 +921,7 @@ body.dark .about-grid::after { opacity: .14; }
 .about-profile dd { margin: 0; line-height: 1.9; overflow-wrap: anywhere; }
 .about-profile .about-other { max-width: 740px; margin-inline: auto; }
 .about-other dd { text-wrap: pretty; }
+.about-sns dd + dd { margin-top: 6px; }
 .about-other a[href="#contact"],
 .about-profile a[data-war-project] {
   text-decoration: underline;
