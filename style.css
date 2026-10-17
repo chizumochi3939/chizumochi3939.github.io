@@ -785,6 +785,13 @@ a[href]:focus-visible {
   padding: 110px 30px;
 }
 
+#about {
+  padding-top: 80px;
+}
+@media (max-width: 800px) {
+  #about { padding-top: 32px; }
+}
+
 .tinted {
   max-width: none;
   padding-left: max(30px,calc((100vw - var(--max))/2 + 30px));
@@ -849,7 +856,6 @@ a[href]:focus-visible {
 .about-grid > div { position: relative; z-index: 1; }
 .about-grid::before {
   background: linear-gradient(125deg, #f9cee1 0%, #ffe8ee 22%, #e4d7f6 40%, #d4eaf8 58%, #dcf2e7 74%, #f9d4e5 100%);
-  background-size: 240% 240%;
   animation: about-pastel-flow 10s ease-in-out infinite alternate;
 }
 .about-grid::after {
@@ -859,16 +865,17 @@ a[href]:focus-visible {
 body.dark .about-grid { background: #30272d; }
 body.dark .about-grid::before {
   background: linear-gradient(125deg, #392b34 0%, #30272d 22%, #322e40 40%, #293741 58%, #2c3935 74%, #392b34 100%);
-  background-size: 240% 240%;
 }
 body.dark .about-grid::after { opacity: .14; }
 @keyframes about-pastel-flow {
-  from { background-position: 0% 20%; }
-  to { background-position: 100% 80%; }
+  from { transform: translate(-10%, -8%) scale(1.12); }
+  to { transform: translate(10%, 8%) scale(1.12); }
 }
+.about-grid.flow-paused::before,
+.about-grid.flow-paused::after { animation-play-state: paused; }
 @keyframes about-pastel-sheen {
-  from { transform: translate(10%, -10%) rotate(10deg); }
-  to { transform: translate(-10%, 10%) rotate(-10deg); }
+  from { transform: translate(10%, -10%) scale(1.12); }
+  to { transform: translate(-10%, 10%) scale(1.12); }
 }
 @media (prefers-reduced-motion: reduce) {
   .about-grid::before, .about-grid::after { animation: none; translate: none; transition: none; }

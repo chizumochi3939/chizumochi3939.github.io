@@ -20,7 +20,6 @@ zh: {
 "about.interests":"<a href=\"#originalMusicHeading\">作曲</a> | <a href=\"#coversHeading\">翻唱</a> | <a href=\"#writing\">写文</a> | 原神 | 卡牌 | 解密 | 百合 | 日常番",
 "about.otherLabel":"其他",
 "about.xiaohongshu":"小红书",
-"about.xiaohongshu":"小红书",
 "about.other":"性格温良之人，有进行活动的平台（QQ，微信，bilibili，小红书，网易云音乐等）全部都叫chizumochi，扩列互关大欢迎。互关请在对应平台私信，扩列请直接加我的QQ，备注称呼即可。",
 "about.favoritesLabel":"自推",
 "about.favorites":"初音未来 | 纳西妲 | 希格雯 | 香风智乃",
@@ -132,7 +131,6 @@ ja:{
 "about.interests":"<a href=\"#originalMusicHeading\">作曲</a> | <a href=\"#coversHeading\">歌ってみた</a> | <a href=\"#writing\">執筆</a> | 原神 | カードゲーム | 謎解き | 百合 | 日常系アニメ",
 "about.otherLabel":"その他",
 "about.xiaohongshu":"小紅書",
-"about.xiaohongshu":"小紅書",
 "about.other":"穏やかな性格です。活動しているSNSやサービス（QQ、WeChat、bilibili、小紅書、NetEase Cloud Musicなど）では、すべてchizumochiという名前を使っています。お友達や相互フォローは大歓迎です。相互フォローをご希望の方は、各サービスのDMでご連絡ください。お友達になってくださる方は、QQに直接友達申請を送ってください。呼んでほしいお名前を添えていただければ大丈夫です。",
 "about.favoritesLabel":"推し",
 "about.favorites":"初音ミク | ナヒーダ | シグウィン | 香風智乃",
@@ -240,7 +238,6 @@ en:{
 "about.mainInterests":"Main interests: <a href=\"#music\">Vocaloid | Hatsune Miku</a>",
 "about.interests":"<a href=\"#originalMusicHeading\">Composing</a> | <a href=\"#coversHeading\">Singing covers</a> | <a href=\"#writing\">Writing</a> | Genshin Impact | Card games | Puzzles | Yuri | Slice-of-life anime",
 "about.otherLabel":"More About Me",
-"about.xiaohongshu":"Xiaohongshu",
 "about.xiaohongshu":"Xiaohongshu",
 "about.other":"I'm a gentle, easygoing person. I go by chizumochi on every platform where I'm active, including QQ, WeChat, bilibili, Xiaohongshu, and NetEase Cloud Music. New friends and mutual follows are always welcome! For mutual follows, please send me a private message on the relevant platform. To become friends, add me directly on QQ and include the name you'd like me to call you in your request.",
 "about.favoritesLabel":"Favorites",
@@ -1300,8 +1297,16 @@ if (aboutFlow) {
   let flowFrame = 0;
   let flowX = 0;
   let flowY = 0;
+  let flowVisible = false;
+  let pointerPosition = null;
   const renderAboutFlow = () => {
     flowFrame = 0;
+    if (pointerPosition) {
+      const bounds = aboutFlow.getBoundingClientRect();
+      flowX = (Math.max(0, Math.min(1, (pointerPosition.x - bounds.left) / bounds.width)) - .5) * 100;
+      flowY = (Math.max(0, Math.min(1, (pointerPosition.y - bounds.top) / bounds.height)) - .5) * 100;
+      pointerPosition = null;
+    }
     aboutFlow.style.setProperty("--about-flow-x", `${flowX}px`);
     aboutFlow.style.setProperty("--about-flow-y", `${flowY}px`);
   };
@@ -1309,19 +1314,39 @@ if (aboutFlow) {
     if (!flowFrame) flowFrame = requestAnimationFrame(renderAboutFlow);
   };
   aboutFlow.addEventListener("pointermove", event => {
-    if (event.pointerType === "touch" || reduceMotion.matches) return;
-    const bounds = aboutFlow.getBoundingClientRect();
-    flowX = (Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width)) - .5) * 100;
-    flowY = (Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height)) - .5) * 100;
+    if (event.pointerType === "touch" || reduceMotion.matches || !flowVisible || document.hidden) return;
+    pointerPosition = {x: event.clientX, y: event.clientY};
     scheduleAboutFlow();
   });
   const resetAboutFlow = () => {
+    pointerPosition = null;
     flowX = flowY = 0;
     scheduleAboutFlow();
   };
   aboutFlow.addEventListener("pointerleave", resetAboutFlow);
   aboutFlow.addEventListener("pointercancel", resetAboutFlow);
   reduceMotion.addEventListener("change", resetAboutFlow);
+  const syncFlowActivity = () => {
+    const paused = !flowVisible || document.hidden || reduceMotion.matches;
+    aboutFlow.classList.toggle("flow-paused", paused);
+    if (paused) {
+      cancelAnimationFrame(flowFrame);
+      flowFrame = 0;
+      pointerPosition = null;
+    }
+  };
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(entries => {
+      flowVisible = entries[0].isIntersecting;
+      syncFlowActivity();
+    });
+    observer.observe(aboutFlow);
+  } else {
+    flowVisible = true;
+  }
+  document.addEventListener("visibilitychange", syncFlowActivity);
+  reduceMotion.addEventListener("change", syncFlowActivity);
+  syncFlowActivity();
 }
 
 loadTrack(randomInitialTrack());
