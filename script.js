@@ -17,13 +17,13 @@ zh: {
 "about.basic":"05 | INFJ | NJUAI PHD | 日语N1 | 日本旅行",
 "about.interestsLabel":"2次属性",
 "about.mainInterests":"主要属性：<a href=\"#music\">术力口 | 初音未来</a>",
-"about.interests":"翻唱 | 作曲 | 写文 | 原神 | 卡牌 | 解密 | 百合 | 日常番",
+"about.interests":"<a href=\"#originalMusicHeading\">作曲</a> | <a href=\"#coversHeading\">翻唱</a> | <a href=\"#writing\">写文</a> | 原神 | 卡牌 | 解密 | 百合 | 日常番",
 "about.otherLabel":"其他",
-"about.other":"性格温良之人，有进行活动的平台（QQ，微信，bilibili，小红书，网易云音乐等）全部都叫chizumochi，扩列互关大欢迎。扩列请查看该网页底部的联系部分，可以直接加我的QQ，备注称呼即可。",
+"about.other":"<span class=\"about-other-paragraph\">性格温良之人，有进行活动的平台（QQ，微信，bilibili，小红书，网易云音乐等）全部都叫chizumochi，扩列互关大欢迎。</span><span class=\"about-other-paragraph\">互关请在对应平台私信，扩列请查看该网页底部的<a href=\"#contact\">联系部分（Email）</a>，直接加我的QQ，备注称呼即可。</span>",
 "about.favoritesLabel":"自推",
 "about.favorites":"初音未来 | 纳西妲 | 希格雯 | 香风智乃",
 "about.projectsLabel":"企划",
-"about.projects":"100首术曲翻唱企划 | Vocaloid同人活动 | 日本47个都道府县全制霸企划",
+"about.projects":"<a href=\"#coversHeading\">100首术曲翻唱企划</a> | <a href=\"#doujinHeading\">Vocaloid同人活动</a> | <a href=\"#travel\">日本47个都道府县全制霸企划</a>",
 "about.card":"Vocaloid · Travel · Writing<br>and everything in between.",
 
 "music.intro":"Vocaloid 会是这个网站最重要的一部分之一。",
@@ -127,13 +127,13 @@ ja:{
 "about.basic":"05 | INFJ | NJUAI PHD | 日本語N1 | 日本旅行",
 "about.interestsLabel":"二次元の趣味",
 "about.mainInterests":"主な好きなもの：<a href=\"#music\">Vocaloid | 初音ミク</a>",
-"about.interests":"歌ってみた | 作曲 | 執筆 | 原神 | カードゲーム | 謎解き | 百合 | 日常系アニメ",
+"about.interests":"<a href=\"#originalMusicHeading\">作曲</a> | <a href=\"#coversHeading\">歌ってみた</a> | <a href=\"#writing\">執筆</a> | 原神 | カードゲーム | 謎解き | 百合 | 日常系アニメ",
 "about.otherLabel":"その他",
-"about.other":"穏やかな性格です。活動しているSNSやサービス（QQ、WeChat、bilibili、小紅書、NetEase Cloud Musicなど）では、すべてchizumochiという名前を使っています。お友達や相互フォローは大歓迎です。連絡先はこのページ最下部をご覧ください。QQへの友達申請は直接送っていただいて大丈夫ですので、お名前を添えてください。",
+"about.other":"<span class=\"about-other-paragraph\">穏やかな性格です。活動しているSNSやサービス（QQ、WeChat、bilibili、小紅書、NetEase Cloud Musicなど）では、すべてchizumochiという名前を使っています。お友達や相互フォローは大歓迎です。</span><span class=\"about-other-paragraph\">相互フォローをご希望の方は、各サービスのDMでご連絡ください。お友達になってくださる方は、このページ最下部の<a href=\"#contact\">連絡先（Email）</a>をご覧のうえ、QQに直接友達申請を送ってください。呼んでほしいお名前を添えていただければ大丈夫です。</span>",
 "about.favoritesLabel":"推し",
 "about.favorites":"初音ミク | ナヒーダ | シグウィン | 香風智乃",
 "about.projectsLabel":"企画",
-"about.projects":"Vocaloid曲100曲歌ってみた企画 | Vocaloid同人イベント | 日本47都道府県制覇企画",
+"about.projects":"<a href=\"#coversHeading\">Vocaloid曲100曲歌ってみた企画</a> | <a href=\"#doujinHeading\">Vocaloid同人イベント</a> | <a href=\"#travel\">日本47都道府県制覇企画</a>",
 "about.card":"Vocaloid · トラベル · ライティング<br>and everything in between.",
 
 "music.intro":"Vocaloidはこのサイトの大切な一部です。",
@@ -234,13 +234,13 @@ en:{
 "about.basic":"05 | INFJ | NJUAI PHD | JLPT N1 | Travelling in Japan",
 "about.interestsLabel":"Interests",
 "about.mainInterests":"Main interests: <a href=\"#music\">Vocaloid | Hatsune Miku</a>",
-"about.interests":"Singing covers | Composing | Writing | Genshin Impact | Card games | Puzzles | Yuri | Slice-of-life anime",
+"about.interests":"<a href=\"#originalMusicHeading\">Composing</a> | <a href=\"#coversHeading\">Singing covers</a> | <a href=\"#writing\">Writing</a> | Genshin Impact | Card games | Puzzles | Yuri | Slice-of-life anime",
 "about.otherLabel":"More About Me",
-"about.other":"I'm a gentle, easygoing person. I go by chizumochi on every platform where I'm active, including QQ, WeChat, bilibili, Xiaohongshu, and NetEase Cloud Music. New friends and mutual follows are always welcome! You'll find my contact details at the bottom of this page. Feel free to add me on QQ directly; just include the name you'd like me to call you in your request.",
+"about.other":"<span class=\"about-other-paragraph\">I'm a gentle, easygoing person. I go by chizumochi on every platform where I'm active, including QQ, WeChat, bilibili, Xiaohongshu, and NetEase Cloud Music. New friends and mutual follows are always welcome!</span><span class=\"about-other-paragraph\">For mutual follows, please send me a private message on the relevant platform. To connect on QQ, see the <a href=\"#contact\">contact section (Email)</a> at the bottom of this page and add me directly. Just include the name you'd like me to call you in your request.</span>",
 "about.favoritesLabel":"Favorites",
 "about.favorites":"Hatsune Miku | Nahida | Sigewinne | Chino Kafu",
 "about.projectsLabel":"Projects",
-"about.projects":"100 Vocaloid Song Covers | Vocaloid Fan Events | Visiting All 47 Prefectures of Japan",
+"about.projects":"<a href=\"#coversHeading\">100 Vocaloid Song Covers</a> | <a href=\"#doujinHeading\">Vocaloid Fan Events</a> | <a href=\"#travel\">Visiting All 47 Prefectures of Japan</a>",
 "about.card":"Vocaloid · Travel · Writing<br>and everything in between.",
 
 "music.intro":"Vocaloid will be one of the biggest parts of this website.",
@@ -1252,6 +1252,36 @@ progress.addEventListener("keydown",(e)=>{
   audio.currentTime=clamp(target,0,audio.duration);
   renderProgress(audio.currentTime);
 });
+
+const aboutFlow = document.querySelector(".about-grid");
+if (aboutFlow) {
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let flowFrame = 0;
+  let flowX = 0;
+  let flowY = 0;
+  const renderAboutFlow = () => {
+    flowFrame = 0;
+    aboutFlow.style.setProperty("--about-flow-x", `${flowX}px`);
+    aboutFlow.style.setProperty("--about-flow-y", `${flowY}px`);
+  };
+  const scheduleAboutFlow = () => {
+    if (!flowFrame) flowFrame = requestAnimationFrame(renderAboutFlow);
+  };
+  aboutFlow.addEventListener("pointermove", event => {
+    if (event.pointerType === "touch" || reduceMotion.matches) return;
+    const bounds = aboutFlow.getBoundingClientRect();
+    flowX = (Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width)) - .5) * 100;
+    flowY = (Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height)) - .5) * 100;
+    scheduleAboutFlow();
+  });
+  const resetAboutFlow = () => {
+    flowX = flowY = 0;
+    scheduleAboutFlow();
+  };
+  aboutFlow.addEventListener("pointerleave", resetAboutFlow);
+  aboutFlow.addEventListener("pointercancel", resetAboutFlow);
+  reduceMotion.addEventListener("change", resetAboutFlow);
+}
 
 loadTrack(randomInitialTrack());
 updatePlaybackMode();

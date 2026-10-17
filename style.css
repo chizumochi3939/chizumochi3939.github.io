@@ -70,15 +70,9 @@ a[href]:focus-visible {
 
 /* Hover feedback changes paint only, keeping text and gallery geometry stable. */
 @media (hover: hover) and (pointer: fine) {
-  a[href]:not(.button):not(.song-preview-cover):not(.trip-photo-slide):not(.trip-summary):not(.writing-work):not(.trip-switcher-option):hover,
+  a[href]:not(.button):not(.song-preview-cover):not(.trip-photo-slide):not(.trip-switcher-option):hover,
   :is(.translation-text-link, .translation-excerpt, .translation-read, .event-posters):hover {
     color: var(--accent);
-  }
-
-  :is(a.song-preview-cover, a.trip-photo-slide, a.trip-summary, a.writing-work,
-      .translation-cover-button, .event-photo, .travel-map-zoom, .trip-day-image, .trip-photo-zoom):hover {
-    outline: 2px solid var(--accent);
-    outline-offset: -2px;
   }
 
   a.button.primary:hover { background: var(--accent); color: var(--surface); }
@@ -829,9 +823,56 @@ a[href]:focus-visible {
   max-width: 820px;
   margin-inline: auto;
   text-align: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 40px 20px 16px;
 }
 
 .about-grid .lead { letter-spacing: 0; }
+
+.about-grid {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #fff3f6;
+}
+.about-grid::before,
+.about-grid::after {
+  content: "";
+  position: absolute;
+  inset: -15%;
+  z-index: 0;
+  pointer-events: none;
+  translate: var(--about-flow-x, 0px) var(--about-flow-y, 0px);
+  transition: translate 1.2s cubic-bezier(.2,.7,.2,1);
+}
+.about-grid > div { position: relative; z-index: 1; }
+.about-grid::before {
+  background: linear-gradient(125deg, #f9cee1 0%, #ffe8ee 22%, #e4d7f6 40%, #d4eaf8 58%, #dcf2e7 74%, #f9d4e5 100%);
+  background-size: 240% 240%;
+  animation: about-pastel-flow 10s ease-in-out infinite alternate;
+}
+.about-grid::after {
+  background: linear-gradient(65deg, transparent 12%, #fff5 30%, #f8cde655 45%, #daf4ee66 60%, transparent 80%);
+  animation: about-pastel-sheen 16s ease-in-out infinite alternate;
+}
+body.dark .about-grid { background: #30272d; }
+body.dark .about-grid::before {
+  background: linear-gradient(125deg, #392b34 0%, #30272d 22%, #322e40 40%, #293741 58%, #2c3935 74%, #392b34 100%);
+  background-size: 240% 240%;
+}
+body.dark .about-grid::after { opacity: .14; }
+@keyframes about-pastel-flow {
+  from { background-position: 0% 20%; }
+  to { background-position: 100% 80%; }
+}
+@keyframes about-pastel-sheen {
+  from { transform: translate(10%, -10%) rotate(10deg); }
+  to { transform: translate(-10%, 10%) rotate(-10deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .about-grid::before, .about-grid::after { animation: none; translate: none; transition: none; }
+}
 
 .about-portrait {
   display: block;
@@ -857,9 +898,38 @@ a[href]:focus-visible {
 
 .about-profile { margin: 32px 0 0; }
 .about-profile > div { margin-bottom: 28px; }
-.about-profile dt { font-size: 1rem; font-weight: 600; margin-bottom: 8px; }
+.about-profile dt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.about-profile dt::before,
+.about-profile dt::after {
+  content: "";
+  flex: 0 1 56px;
+  height: 5px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  pointer-events: none;
+}
+.about-profile dt::before { border-right: 3px solid var(--accent); }
+.about-profile dt::after { border-left: 3px solid var(--accent); }
 .about-profile dd { margin: 0; line-height: 1.9; overflow-wrap: anywhere; }
-.about-profile .about-other { max-width: 680px; margin-inline: auto; }
+.about-profile .about-other { max-width: 740px; margin-inline: auto; }
+.about-other dd { text-wrap: pretty; }
+.about-other a[href="#contact"],
+.about-profile a[data-war-project] {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  text-decoration-skip-ink: none;
+}
+.about-other-paragraph { display: inline; }
+html[lang="en"] .about-other-paragraph + .about-other-paragraph::before { content: " "; }
 .about-interests-more { display: block; margin-top: 6px; }
 .about-projects-more { display: block; margin-top: 6px; }
 
